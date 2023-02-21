@@ -1,7 +1,7 @@
 import mujoco
 from mujoco import viewer
 
-with open('humanoid\\humanoid.xml', 'r') as f:
+with open('model/humanoid/humanoid.xml', 'r') as f:
     XML = f.read()
 
 model = mujoco.MjModel.from_xml_string(XML)
