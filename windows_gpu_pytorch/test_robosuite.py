@@ -1,14 +1,19 @@
-from robosuite.models import MujocoWorldBase
-from robosuite.models.robots import Panda
+import numpy as np
+import robosuite as suite
 
-from robosuite.models.grippers import gripper_factory
+# create environment instance
+env = suite.make(
+    env_name="Lift", # try with other tasks like "Stack" and "Door"
+    robots="Panda",  # try with other robots like "Sawyer" and "Jaco"
+    has_renderer=True,
+    has_offscreen_renderer=False,
+    use_camera_obs=False,
+)
 
+# reset the environment
+env.reset()
 
-world = MujocoWorldBase()
-mujoco_robot = Panda()
-
-
-gripper = gripper_factory('PandaGripper')
-mujoco_robot.add_gripper(gripper)
-mujoco_robot.set_base_xpos([0, 0, 0])
-world.merge(mujoco_robot)
+for i in range(1000):
+    action = np.random.randn(env.robots[0].dof) # sample random action
+    obs, reward, done, info = env.step(action)  # take action in the environment
+    env.render()  # render on display
