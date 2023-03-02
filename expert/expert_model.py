@@ -4,7 +4,47 @@ from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
 from robosuite.utils.placement_samplers import UniformRandomSampler
 
-# np.random.seed(1000)  # 5 is good
+
+## from pyquaternion import Quaternion
+## # Distance thresholds to move to next state
+## HORIZ_THRESH = 0.05
+## VERT_THRESH = 0.02
+## ANG_THRESH = 0.06
+## def close_enough(eef_pos, eef_quat, waypoint):
+    ## """ Returns if eef is close enough to waypoint to transition to next task.
+    ## Args:
+       ## eef_pos (np.array shape(3,)): End effector position
+       ## eef_quat (np.array shape(4,)): End effector quaternion (x,y,z,w)
+       ## waypoint [x, y, z, ax, ay, az, gripper]: OSC controller target waypoint
+    ## """
+    ## horiz_close = np.linalg.norm(eef_pos[0:2] - waypoint[0:2]) < HORIZ_THRESH
+    ## vert_close = np.abs(eef_pos[2] - waypoint[2]) < VERT_THRESH
+    ## ang_close = ang_dist(ee_quat, T.axisangle2quat(waypoint[3:6])) < ANG_TRESH
+
+
+## def ang_dist(q1, q2):
+    ## """ Gives the angular distance between two quaternions (x,y,z,w). """
+    ## Q1 = Quaternion(q1[3], q1[0], q1[1], q1[2])  # Convert to w,x,y,z form
+    ## Q2 = Quaternion(q2[3], q2[0], q2[1], q2[2])  # Convert to w,x,y,z form
+    ## return Quaternion.distance(Q1, Q2)
+
+def find_cube_rotation(cube_quat, home_quat):
+    """ Finds the orientation of the cube most suitable for robot to grasp. """
+    cube_quat = T.quat_multiply(cube_quat, [1,0,0,0])
+    options = [
+            T.quat2mat(cube_quat),
+            np.array([[0,-1,0],[1,0,0],[0,0,1]])@T.quat2mat(cube_quat),
+            np.array([[-1,0,0],[0,-1,0],[0,0,1]])@T.quat2mat(cube_quat),
+            np.array([[0,1,0],[-1,0,0],[0,0,1]])@T.quat2mat(cube_quat),
+    ]
+    idx = np.argmin([np.linalg.norm(
+            T.get_orientation_error(T.mat2quat(options[i]), home_quat)
+        ) for i in range(len(options))]
+    )
+    return T.mat2quat(options[idx])
+
+
+np.random.seed(1001)
 
 controller_config = load_controller_config(default_controller="OSC_POSE")
 controller_config["control_delta"] = False  # Use absolute position
@@ -46,23 +86,24 @@ while True:
     # reset the environment
     env.reset()
     
-    # Initial observation to get block poses
-    obs, reward, done, info = env.step(np.zeros(7))
-    cubeA_pos = obs["cubeA_pos"] ##np.array([0.02236725, 0.07769993, 0.8197210])
-    cubeA_quat = obs["cubeA_quat"] ##np.array([0, 0, 7.27025e-01, 6.866109e-01])
-    cubeB_pos = obs["cubeB_pos"] ##np.array([0.0676399, -0.0796457, 0.82472101])
-    cubeB_quat = obs["cubeB_quat"] ##np.array([0., 0., 9.95409e-01, 9.5708e-02])
-
     # Target poses, absolute (x, y, z, rx, ry, rz, gripper)
     # (rx, ry, rz) is the axis of rotation with magnitude the angle of rotation)
     home_axisangle = np.array([np.pi*np.sqrt(2)/2, np.pi*np.sqrt(2)/2, 0.])
     home_quat = T.axisangle2quat(home_axisangle)
     home = np.array([0.0, 0.0, 1.1, *home_axisangle, -1])
-
+    
+    # Initial observation to get block poses
+    obs, reward, done, info = env.step(np.zeros(7))
+    cubeA_pos = obs["cubeA_pos"] 
+    cubeA_quat = obs["cubeA_quat"]
+    cubeB_pos = obs["cubeB_pos"]
+    cubeB_quat = obs["cubeB_quat"] 
+    pick_quat = find_cube_rotation(cubeA_quat, home_quat)
+    place_quat = find_cube_rotation(cubeB_quat, home_quat)
     # Red cube (A)
     A_ungrasped = np.concatenate([
             cubeA_pos, 
-            T.quat2axisangle(T.quat_multiply(cubeA_quat, [1,0,0,0])), 
+            T.quat2axisangle(pick_quat), 
             [-1]
     ])
     A_primed_ungrasped = A_ungrasped + [0, 0, .1, 0, 0, 0, 0]
@@ -71,34 +112,73 @@ while True:
     # Green cube (B)
     B_ungrasped = np.concatenate([
             cubeB_pos + [0, 0, 0.03], 
-            T.quat2axisangle(T.quat_multiply(cubeB_quat, [1,0,0,0])), 
+            T.quat2axisangle(place_quat), 
             [-1]
     ])
     B_primed_ungrasped = B_ungrasped + [0, 0, .1, 0, 0, 0, 0]
     B_grasped = np.concatenate([B_ungrasped[:6], [1]])
     B_primed_grasped = np.concatenate([B_primed_ungrasped[:6], [1]])
     waypoints = [
-            home, 
-            A_primed_ungrasped,
-            A_ungrasped,
-            A_grasped,
-            A_primed_grasped,
-            B_primed_grasped,
-            B_grasped,
-            B_ungrasped,
-            B_primed_ungrasped,
-            home
+            home,                  # 0
+            A_primed_ungrasped,    # 1
+            A_ungrasped,           # 2
+            A_grasped,             # 3
+            A_primed_grasped,      # 4
+            B_primed_grasped,      # 5
+            B_grasped,             # 6
+            B_ungrasped,           # 7
+            B_primed_ungrasped,    # 8
+            home                   # 9
     ]
-
+    # Permissible random delta variation for each waypoint, [hi, low]
+    home_variation = [
+            np.array([-0.003, -0.003, -0.003, -0.010, -0.010, -0.010, 0]),
+            np.array([ 0.003,  0.003,  0.003,  0.010,  0.010,  0.010, 0])
+    ]
+    prime_variation = [  # Primed height above cube
+            np.array([-0.003, -0.003, -0.001, -0.003, -0.003, -0.003, 0]),
+            np.array([ 0.003,  0.003,  0.003,  0.003,  0.003,  0.003, 0])
+    ]
+    engage_variation = [  # Descended down onto cube
+            np.array([-0.001, -0.001, -0.001, -0.001, -0.001, -0.001, 0]),  
+            np.array([ 0.001,  0.001,  0.001,  0.001,  0.001,  0.001, 0])
+    ]
+    variations = [
+        home_variation,    # 0
+        prime_variation,   # 1
+        engage_variation,  # 2
+        engage_variation,  # 3
+        prime_variation,   # 4
+        prime_variation,   # 5
+        engage_variation,  # 6
+        engage_variation,  # 7
+        prime_variation,   # 8
+        home_variation     # 9
+    ]
+    
+    # Subtasks
+    # 0 = initial home
+    # 1 = prime pick 
+    # 2 = descend pick
+    # 3 = grasp
+    # 4 = ascent pick
+    # 5 = prime place
+    # 6 = descent place
+    # 7 = release
+    # 8 = ascend place
+    # 9 = final home
+    subtask = 0
     # Target durations, in number of steps
-    durations = [75, 105, 50, 20, 50, 105, 50, 20, 50, 75]
+    durations = [75, 100, 50, 10, 50, 100, 50, 10, 50, 75]
 
     for i in range(np.sum(durations)):
-        action = waypoints[int(np.sum(i > np.cumsum(durations)))]
-        print(action)
+        subtask = int(np.sum(i > np.cumsum(durations)))
+        action = waypoints[subtask]
+        action += np.random.uniform(*variations[subtask])
         obs, reward, done, info = env.step(action)  # move towards waypoint
-        env.render()  # render on display
-        print("step:", i, " reward:", reward)
+        ## if i % 1 == 0:
+            ## env.render()  # render on display
+        print("step:", i, "subtask:", subtask, "reward:", reward)
         ## print("cubeA_pos = np.array(", obs["cubeA_pos"])
         ## print("cubeA_quat = np.array(", obs["cubeA_quat"])
         ## print("cubeB_pos = np.array(", obs["cubeB_pos"])
