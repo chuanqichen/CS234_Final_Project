@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# robosuite github
+robosuite
+
+# trajectories
+trajectories

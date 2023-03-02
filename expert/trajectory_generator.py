@@ -1,10 +1,10 @@
+import os
+import pandas as pd
 import numpy as np
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
 from robosuite.utils.placement_samplers import UniformRandomSampler
-
-# np.random.seed(1000)  # 5 is good
 
 controller_config = load_controller_config(default_controller="OSC_POSE")
 controller_config["control_delta"] = False  # Use absolute position
@@ -24,10 +24,10 @@ env = suite.make(
     control_freq=20,
     horizon=200,
     ignore_done=True,
-    ## use_object_obs=True,
-    ## use_camera_obs=True,
-    ## camera_heights=84,
-    ## camera_widths=84
+    use_object_obs=True,
+    use_camera_obs=True,
+    camera_heights=64,
+    camera_widths=64,
     placement_initializer=UniformRandomSampler(
         name="ObjectSampler",
         x_range=[-0.35,0.35],
@@ -39,12 +39,23 @@ env = suite.make(
         z_offset=0.01
     )
 )
+
+df_obs = pd.DataFrame()
+df_imgs = pd.DataFrame()
+dirpath = input("Enter dirpath: ")
+filepath = input("Enter filename: ")
+save_every = int(input("Save every: "))
+num_iterations = int(input("Number of episodes: "))
+
+if not os.path.exists(dirpath):
+    os.makedirs(dirpath)
+
 scene_no = 0
 while True:
-    print(f"------ Scene {scene_no} ------")
+    # print(f"------ Scene {scene_no} ------", end="\r")
     scene_no += 1
     # reset the environment
-    env.reset()
+    obs = env.reset()
     
     # Initial observation to get block poses
     obs, reward, done, info = env.step(np.zeros(7))
@@ -93,18 +104,70 @@ while True:
     # Target durations, in number of steps
     durations = [75, 105, 50, 20, 50, 105, 50, 20, 50, 75]
 
-    for i in range(np.sum(durations)):
-        action = waypoints[int(np.sum(i > np.cumsum(durations)))]
-        print(action)
+    observations = []
+    imgs = []
+    imgs.append(obs["agentview_image"])
+    obs.pop("agentview_image", "")
+    observations.append(obs)
+    actions = []
+    rewards = []
+
+    sum_durations = np.sum(durations)
+    cumsum_durations = np.cumsum(durations)
+    print()
+    for i in range(sum_durations):
+        print(f"Episode: {scene_no}, Iteration: {i+1}/{sum_durations}", end="\r")
+        action = waypoints[int(np.sum(i > cumsum_durations))]
         obs, reward, done, info = env.step(action)  # move towards waypoint
-        env.render()  # render on display
-        print("step:", i, " reward:", reward)
-        ## print("cubeA_pos = np.array(", obs["cubeA_pos"])
-        ## print("cubeA_quat = np.array(", obs["cubeA_quat"])
-        ## print("cubeB_pos = np.array(", obs["cubeB_pos"])
-        ## print("cubeB_quat = np.array(", obs["cubeB_quat"])
+        actions.append(action)
+        rewards.append(reward)
+        if i == (sum_durations - 1):
+            break
+        imgs.append(obs["agentview_image"])
+        obs.pop("agentview_image", "")
+        observations.append(obs)
 
 
+    sample_obs = observations[0]
+    state_dims = {key: sample_obs[key].shape for key in sample_obs.keys()}
 
+    observations_flatten = [
+        np.concatenate([obs[k] for k in state_dims]) for obs in observations
+    ]
+    imgs_flatten = [img.flatten() for img in imgs]
+    df_actions = pd.DataFrame(actions)
+    df_actions.columns = [f"a_{i}" for i in range(df_actions.shape[1])]
+    df_obs_trajectory = pd.DataFrame(observations_flatten)
+    df_obs_trajectory = pd.concat([df_obs_trajectory, df_actions], axis=1)
+    df_obs_trajectory["rewards"] = rewards
+    df_obs_trajectory["trajectory_id"] = scene_no
+    df_imgs_trajectory = pd.DataFrame(imgs_flatten)
+    df_imgs_trajectory = pd.concat([df_imgs_trajectory, df_actions], axis=1)
+    df_imgs_trajectory["rewards"] = rewards
+    df_imgs_trajectory["trajectory_id"] = scene_no
 
+    df_obs = pd.concat([df_obs, df_obs_trajectory], axis=0)
+    df_imgs = pd.concat([df_imgs, df_imgs_trajectory], axis=0)
 
+    if scene_no % save_every == 0:
+        print(f"Saving to csv")
+        indexer = scene_no // save_every
+        index_before = ((indexer - 1) * save_every) + 1
+        index_after = indexer * save_every
+        obs_filename = f"{filepath}_observations_{index_before}_{index_after}.csv"
+        imgs_filename = f"{filepath}_imgs_{index_before}_{index_after}.csv"
+        df_obs.to_csv(os.path.join(dirpath, obs_filename))
+        df_imgs.to_csv(os.path.join(dirpath, imgs_filename))
+
+    if scene_no == num_iterations:
+        if scene_no % save_every == 0:
+            break
+        index_after = scene_no
+        indexer = scene_no // save_every
+        index_before = (indexer * save_every) + 1
+        obs_filename = f"{filepath}_observations_{index_before}_{index_after}.csv"
+        imgs_filename = f"{filepath}_imgs_{index_before}_{index_after}.csv"
+        df_obs.to_csv(os.path.join(dirpath, obs_filename))
+        df_imgs.to_csv(os.path.join(dirpath, imgs_filename))
+        break
+        
