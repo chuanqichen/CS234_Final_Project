@@ -5,6 +5,7 @@ import robosuite as suite
 from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
 from robosuite.utils.placement_samplers import UniformRandomSampler
+import json
 
 # ---------------------------------------------------------------------------- #
 #                                   Settings                                   #
@@ -229,7 +230,20 @@ while True:
 
 
     sample_obs = observations[0]
-    state_dims = {key: sample_obs[key].shape for key in sample_obs.keys()}
+    state_dims = {key: sample_obs[key].shape[0] for key in sample_obs.keys()}
+
+    if not os.path.exists(os.path.join(dirpath, "obs_dims.json")):
+        with open(os.path.join(dirpath, "obs_dims.json"), "w") as f:
+            json.dump(state_dims, f)
+
+    sample_imgs = imgs[0]
+    state_img_dims = {
+        "img": sample_imgs.shape[0] * sample_imgs.shape[1] * sample_imgs.shape[2]
+    }
+    if not os.path.exists(os.path.join(dirpath, "img_dims.json")):
+        with open(os.path.join(dirpath, "img_dims.json"), "w") as f:
+            json.dump(state_img_dims, f)
+
 
     observations_flatten = [
         np.concatenate([obs[k] for k in state_dims]) for obs in observations
@@ -269,7 +283,7 @@ while True:
         index_before = (indexer * save_every) + 1
         obs_filename = f"{filepath}_observations_{index_before}_{index_after}.csv"
         imgs_filename = f"{filepath}_imgs_{index_before}_{index_after}.csv"
-        df_obs.to_csv(os.path.join(dirpath, obs_filename))
-        df_imgs.to_csv(os.path.join(dirpath, imgs_filename))
+        df_obs.to_csv(os.path.join(dirpath, obs_filename), index=False)
+        df_imgs.to_csv(os.path.join(dirpath, imgs_filename), index=False)
         break
         
