@@ -50,7 +50,7 @@ controller_config = load_controller_config(default_controller="OSC_POSE")
 controller_config["control_delta"] = False  # Use absolute position
 controller_config["kp"] = 15  
 controller_config["damping_ratio"] = 2 
-controller_config["uncouple_pos_ori"] = False  
+controller_config["uncouple_pos_ori"] = False
 
 # create environment instance
 env = suite.make(
@@ -176,8 +176,8 @@ while True:
         action = waypoints[subtask]
         action += np.random.uniform(*variations[subtask])
         obs, reward, done, info = env.step(action)  # move towards waypoint
-        ## if i % 1 == 0:
-            ## env.render()  # render on display
+        if i % 1 == 0:
+            env.render()  # render on display
         print("step:", i, "subtask:", subtask, "reward:", reward)
         ## print("cubeA_pos = np.array(", obs["cubeA_pos"])
         ## print("cubeA_quat = np.array(", obs["cubeA_quat"])
