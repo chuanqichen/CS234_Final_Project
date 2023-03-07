@@ -1,47 +1,63 @@
 import torch
 import torch.nn as nn
+import numpy as np
 
+class MultiLayerCNN(nn.Module):
 
-def build_mlp(input_size, output_size, n_layers, size):
-    """
-    Args:
-        input_size: int, the dimension of inputs to be given to the network
-        output_size: int, the dimension of the output
-        n_layers: int, the number of hidden layers of the network
-        size: int, the size of each hidden layer
-    Returns:
-        An instance of (a subclass of) nn.Module representing the network.
+    def __init__(self, obs_input_size, img_input_width, img_input_height, output_size):
+        super().__init__()
+        self.OBS_SIZE = obs_input_size
+        self.IMG_WIDTH = img_input_width
+        self.IMG_HEIGHT = img_input_height
+        self.DENSE_OUTPUT = 128
+        self.CNN_OUTPUT_SIZE = 243
+        self.OUTPUT_SIZE = output_size
 
-    TODO:
-    Build a feed-forward network (multi-layer perceptron, or mlp) that maps
-    input_size-dimensional vectors to output_size-dimensional vectors.
-    It should have 'n_layers' layers, each of 'size' units and followed
-    by a ReLU nonlinearity. Additionally, the final layer should be linear (no ReLU).
+        self.cnn_stack = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=27, kernel_size=3, padding=0, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=(2,2), stride=2),
+            nn.Conv2d(in_channels=27, out_channels=81, kernel_size=3, padding=0, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=(2,2), stride=2),
+            nn.Conv2d(in_channels=81, out_channels=self.CNN_OUTPUT_SIZE, kernel_size=3, padding=0, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=(2,2), stride=2)
+        )
+        self.cnn_output_width = int((self.IMG_WIDTH - 3 + 1) / 2)
+        self.cnn_output_width = int(np.floor((self.cnn_output_width - 3 + 1) / 2))
+        self.cnn_output_width = int(np.floor((self.cnn_output_width - 3 + 1) / 2))
+        self.cnn_output_height = int((self.IMG_HEIGHT - 3 + 1) / 2)
+        self.cnn_output_height = int(np.floor((self.cnn_output_height - 3 + 1) / 2))
+        self.cnn_output_height = int(np.floor((self.cnn_output_height - 3 + 1) / 2))
 
-    That is, the network architecture should be the following:
-    [LINEAR LAYER]_1 -> [RELU] -> [LINEAR LAYER]_2 -> ... -> [LINEAR LAYER]_n -> [RELU] -> [LINEAR LAYER]
+        self.dense_stack = nn.Sequential(
+            nn.Linear(in_features=self.OBS_SIZE, out_features=self.DENSE_OUTPUT),
+            nn.ReLU(),
+            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.DENSE_OUTPUT),
+            nn.ReLU(),
+            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.DENSE_OUTPUT),
+            nn.ReLU()
+        )
+        self.combined_stack = nn.Sequential(
+            nn.Linear(
+                in_features=(self.cnn_output_height * self.cnn_output_width * self.CNN_OUTPUT_SIZE) + self.DENSE_OUTPUT,
+                out_features=self.DENSE_OUTPUT
+            ),
+            nn.ReLU(),
+            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.OUTPUT_SIZE)
+        )
 
-    "nn.Linear" and "nn.Sequential" may be helpful.
-    """
-    #######################################################
-    #########   YOUR CODE HERE - 7-15 lines.   ############
-    layers = []
-    input_layer = nn.Linear(in_features=input_size, out_features=size)
-    output_layer = nn.Linear(in_features=size, out_features=output_size)
-    layers.append(input_layer)
-    layers.append(nn.ReLU())
-    for i in range(n_layers - 1):
-        layers.append(nn.Linear(in_features=size, out_features=size))
-        layers.append(nn.ReLU())
-
-    layers.append(output_layer)
-    network = nn.Sequential(*layers)
-    return network
-    #######################################################
-    #########          END YOUR CODE.          ############
-
-def build_cnn(input_size, output_size, n_layers, size):
-    pass
+    def forward(self, x):
+        obs = x[:,:self.OBS_SIZE]
+        img = x[:,self.OBS_SIZE:].reshape(-1, self.IMG_HEIGHT, self.IMG_WIDTH, 3)
+        img = img.permute(0, 3, 1, 2)
+        img_output = self.cnn_stack(img)
+        img_output = torch.flatten(input=img_output, start_dim=1)
+        obs_output = self.dense_stack(obs)
+        output = torch.cat([img_output, obs_output], 1)
+        output = self.combined_stack(output)
+        return output
 
 
 if torch.cuda.is_available():
@@ -50,7 +66,6 @@ elif torch.backends.mps.is_available():
     device = torch.device("mps")
 else:
     device = torch.device("cpu")
-
 
 
 def np2torch(x, cast_double_to_float=True):

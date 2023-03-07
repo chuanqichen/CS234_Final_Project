@@ -1,38 +1,13 @@
 import os
 import pandas as pd
 import numpy as np
-import robosuite as suite
-from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
-from robosuite.utils.placement_samplers import UniformRandomSampler
 import json
+from environment import Environment
 
 # ---------------------------------------------------------------------------- #
 #                                   Settings                                   #
 # ---------------------------------------------------------------------------- #
-
-## from pyquaternion import Quaternion
-## # Distance thresholds to move to next state
-## HORIZ_THRESH = 0.05
-## VERT_THRESH = 0.02
-## ANG_THRESH = 0.06
-## def close_enough(eef_pos, eef_quat, waypoint):
-    ## """ Returns if eef is close enough to waypoint to transition to next task.
-    ## Args:
-       ## eef_pos (np.array shape(3,)): End effector position
-       ## eef_quat (np.array shape(4,)): End effector quaternion (x,y,z,w)
-       ## waypoint [x, y, z, ax, ay, az, gripper]: OSC controller target waypoint
-    ## """
-    ## horiz_close = np.linalg.norm(eef_pos[0:2] - waypoint[0:2]) < HORIZ_THRESH
-    ## vert_close = np.abs(eef_pos[2] - waypoint[2]) < VERT_THRESH
-    ## ang_close = ang_dist(ee_quat, T.axisangle2quat(waypoint[3:6])) < ANG_TRESH
-
-
-## def ang_dist(q1, q2):
-    ## """ Gives the angular distance between two quaternions (x,y,z,w). """
-    ## Q1 = Quaternion(q1[3], q1[0], q1[1], q1[2])  # Convert to w,x,y,z form
-    ## Q2 = Quaternion(q2[3], q2[0], q2[1], q2[2])  # Convert to w,x,y,z form
-    ## return Quaternion.distance(Q1, Q2)
 
 def find_cube_rotation(cube_quat, home_quat):
     """ Finds the orientation of the cube most suitable for robot to grasp. """
@@ -52,43 +27,13 @@ def find_cube_rotation(cube_quat, home_quat):
 
 np.random.seed(1001)
 
-controller_config = load_controller_config(default_controller="OSC_POSE")
-controller_config["control_delta"] = False  # Use absolute position
-controller_config["kp"] = 15  
-controller_config["damping_ratio"] = 2 
-controller_config["uncouple_pos_ori"] = False
-
 # ---------------------------------------------------------------------------- #
 #                                  Environment                                 #
 # ---------------------------------------------------------------------------- #
 
 # create environment instance
-env = suite.make(
-    env_name="Stack", # try with other tasks like "Stack" and "Door"
-    robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
-    gripper_types="default",
-    controller_configs=controller_config,
-    has_renderer=True,
-    render_camera="frontview",
-    has_offscreen_renderer=True,
-    control_freq=20,
-    horizon=200,
-    ignore_done=True,
-    use_object_obs=True,
-    use_camera_obs=True,
-    camera_heights=64,
-    camera_widths=64,
-    placement_initializer=UniformRandomSampler(
-        name="ObjectSampler",
-        x_range=[-0.35,0.35],
-        y_range=[-0.35,0.35],
-        rotation=None,
-        ensure_object_boundary_in_range=False,
-        ensure_valid_placement=True,
-        reference_pos=np.array((0, 0, 0.8)),
-        z_offset=0.01
-    )
-)
+env_generator = Environment()
+env = env_generator.create_env()
 
 # ---------------------------------------------------------------------------- #
 #                                 Data Settings                                #

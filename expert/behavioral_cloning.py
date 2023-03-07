@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import pandas as pd
-from network_utils import build_mlp, np2torch, device
+from network_utils import MultiLayerCNN, np2torch, device
 from environment import Environment
 import matplotlib.pyplot as plt
 
@@ -48,14 +48,22 @@ def create_dataloader(obs, actions, batch_size: int):
     return dataloader
 
 # ---------------------------------------------------------------------------- #
-#                                   Training                                   #
+#                                    Network                                   #
 # ---------------------------------------------------------------------------- #
 
-network = build_mlp(
-    input_size=obs_dims, output_size=action_dim, n_layers=5, size=obs_dims * 2
+network = MultiLayerCNN(
+    obs_input_size=train_dims,
+    img_input_height=int(np.sqrt(img_dims / 3)),
+    img_input_width=int(np.sqrt(img_dims / 3)),
+    output_size=action_dim
 ).to(device=device)
-optimizer = torch.optim.Adam(network.parameters(), lr=0.0000075)
+optimizer = torch.optim.Adam(network.parameters(), lr=0.00001)
 criterion = torch.nn.MSELoss()
+
+
+# ---------------------------------------------------------------------------- #
+#                                   Training                                   #
+# ---------------------------------------------------------------------------- #
 
 obs_filepaths = [
     os.path.join(DATADIR, filename)\
@@ -92,23 +100,19 @@ for i in range(epochs):
         dataloader = create_dataloader(obs_imgs, actions, batch_size=batch_size)
         n_dataloader = len(dataloader)
         del obs, imgs, obs_imgs, actions, df_obs, df_imgs
-        break
 
-        # TODO: To be modified with CNN + Dense, use MSE LOSS without tanh on output layer.
-        # for batch, (X, y) in enumerate(dataloader):
+        for batch, (X, y) in enumerate(dataloader):
 
-        #     y_hat = network(X)
-        #     loss = criterion(y_hat, y)
-        #     print(
-        #         f"File: {file_no}/{total_file}, Batch: {batch}/{n_dataloader}, Loss: {loss}",
-        #         end="\r"
-        #     )
+            y_hat = network(X)
+            loss = criterion(y_hat, y)
+            print(
+                f"File: {file_no}/{total_file}, Batch: {batch+1}/{n_dataloader}, Loss: {loss}",
+                end="\r"
+            )
 
-        #     optimizer.zero_grad()
-        #     loss.backward()
-        #     optimizer.step()
-
-    break
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
 
 torch.save(network.state_dict(), "model.pt") # saving the model        
