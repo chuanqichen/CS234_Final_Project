@@ -94,8 +94,6 @@ env = suite.make(
 #                                 Data Settings                                #
 # ---------------------------------------------------------------------------- #
 
-df_obs = pd.DataFrame()
-df_imgs = pd.DataFrame()
 dirpath = input("Enter dirpath: ")
 filepath = input("Enter filename: ")
 save_every = int(input("Save every: "))
@@ -108,6 +106,8 @@ if not os.path.exists(dirpath):
 #                                      Run                                     #
 # ---------------------------------------------------------------------------- #
 
+df_obs = pd.DataFrame()
+df_imgs = pd.DataFrame()
 scene_no = 0
 while True:
     # print(f"------ Scene {scene_no} ------", end="\r")
@@ -213,7 +213,6 @@ while True:
     sum_durations = np.sum(durations)
     cumsum_durations = np.cumsum(durations)
     print()
-
     for i in range(sum_durations):
         print(f"Episode: {scene_no}, Iteration: {i+1}/{sum_durations}", end="\r")
         subtask = int(np.sum(i > cumsum_durations))
@@ -228,42 +227,45 @@ while True:
         obs.pop("agentview_image", "")
         observations.append(obs)
 
+    # Remove unsuccessful trajectories
+    if sum(rewards) < 1.0:
+        print("\nTask unsuccessful, remove trajectory...", end="\r")
+    else:
+        sample_obs = observations[0]
+        state_dims = {key: sample_obs[key].shape[0] for key in sample_obs.keys()}
 
-    sample_obs = observations[0]
-    state_dims = {key: sample_obs[key].shape[0] for key in sample_obs.keys()}
+        if not os.path.exists(os.path.join(dirpath, "obs_dims.json")):
+            with open(os.path.join(dirpath, "obs_dims.json"), "w") as f:
+                json.dump(state_dims, f)
 
-    if not os.path.exists(os.path.join(dirpath, "obs_dims.json")):
-        with open(os.path.join(dirpath, "obs_dims.json"), "w") as f:
-            json.dump(state_dims, f)
-
-    sample_imgs = imgs[0]
-    state_img_dims = {
-        "img": sample_imgs.shape[0] * sample_imgs.shape[1] * sample_imgs.shape[2]
-    }
-    if not os.path.exists(os.path.join(dirpath, "img_dims.json")):
-        with open(os.path.join(dirpath, "img_dims.json"), "w") as f:
-            json.dump(state_img_dims, f)
+        sample_imgs = imgs[0]
+        state_img_dims = {
+            "img": sample_imgs.shape[0] * sample_imgs.shape[1] * sample_imgs.shape[2]
+        }
+        if not os.path.exists(os.path.join(dirpath, "img_dims.json")):
+            with open(os.path.join(dirpath, "img_dims.json"), "w") as f:
+                json.dump(state_img_dims, f)
 
 
-    observations_flatten = [
-        np.concatenate([obs[k] for k in state_dims]) for obs in observations
-    ]
-    imgs_flatten = [img.flatten() for img in imgs]
-    df_actions = pd.DataFrame(actions)
-    df_actions.columns = [f"a_{i}" for i in range(df_actions.shape[1])]
-    df_obs_trajectory = pd.DataFrame(observations_flatten)
-    df_obs_trajectory = pd.concat([df_obs_trajectory, df_actions], axis=1)
-    df_obs_trajectory["rewards"] = rewards
-    df_obs_trajectory["trajectory_id"] = scene_no
-    df_obs_trajectory["subtask_id"] = subtasks
-    df_imgs_trajectory = pd.DataFrame(imgs_flatten)
-    df_imgs_trajectory = pd.concat([df_imgs_trajectory, df_actions], axis=1)
-    df_imgs_trajectory["rewards"] = rewards
-    df_imgs_trajectory["trajectory_id"] = scene_no
-    df_imgs_trajectory["subtask_id"] = subtasks
+        observations_flatten = [
+            np.concatenate([obs[k] for k in state_dims]) for obs in observations
+        ]
+        imgs_flatten = [img.flatten() for img in imgs]
+        df_actions = pd.DataFrame(actions)
+        df_actions.columns = [f"a_{i}" for i in range(df_actions.shape[1])]
+        df_obs_trajectory = pd.DataFrame(observations_flatten)
+        df_obs_trajectory = pd.concat([df_obs_trajectory, df_actions], axis=1)
+        df_obs_trajectory["rewards"] = rewards
+        df_obs_trajectory["trajectory_id"] = scene_no
+        df_obs_trajectory["subtask_id"] = subtasks
+        df_imgs_trajectory = pd.DataFrame(imgs_flatten)
+        df_imgs_trajectory = pd.concat([df_imgs_trajectory, df_actions], axis=1)
+        df_imgs_trajectory["rewards"] = rewards
+        df_imgs_trajectory["trajectory_id"] = scene_no
+        df_imgs_trajectory["subtask_id"] = subtasks
 
-    df_obs = pd.concat([df_obs, df_obs_trajectory], axis=0)
-    df_imgs = pd.concat([df_imgs, df_imgs_trajectory], axis=0)
+        df_obs = pd.concat([df_obs, df_obs_trajectory], axis=0)
+        df_imgs = pd.concat([df_imgs, df_imgs_trajectory], axis=0)
 
     if scene_no % save_every == 0:
         print(f"\nSaving to csv")
@@ -272,12 +274,15 @@ while True:
         index_after = indexer * save_every
         obs_filename = f"{filepath}_observations_{index_before}_{index_after}.csv"
         imgs_filename = f"{filepath}_imgs_{index_before}_{index_after}.csv"
-        df_obs.to_csv(os.path.join(dirpath, obs_filename))
-        df_imgs.to_csv(os.path.join(dirpath, imgs_filename))
+        df_obs.to_csv(os.path.join(dirpath, obs_filename), index=False)
+        df_imgs.to_csv(os.path.join(dirpath, imgs_filename), index=False)
+        df_obs = pd.DataFrame()
+        df_imgs = pd.DataFrame()
 
     if scene_no == num_iterations:
         if scene_no % save_every == 0:
             break
+        print(f"\nSaving to csv")
         index_after = scene_no
         indexer = scene_no // save_every
         index_before = (indexer * save_every) + 1
