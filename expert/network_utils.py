@@ -40,6 +40,9 @@ def build_mlp(input_size, output_size, n_layers, size):
     #######################################################
     #########          END YOUR CODE.          ############
 
+def build_cnn(input_size, output_size, n_layers, size):
+    pass
+
 
 if torch.cuda.is_available():
     device = torch.device("cuda")
