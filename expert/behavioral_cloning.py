@@ -1,4 +1,5 @@
 import os
+import sys
 import json
 import torch
 from torch.utils.data import DataLoader, TensorDataset
@@ -13,7 +14,10 @@ import matplotlib.pyplot as plt
 #                                     Input                                    #
 # ---------------------------------------------------------------------------- #
 # Can modify
-DATADIR = "trajectories"
+DATADIR = input("Enter dataset directory: ")
+if not os.path.exists(DATADIR):
+    print("Directory doesn't exists!")
+    sys.exit(1)
 batch_size = 64
 
 # ---------------------------------------------------------------------------- #
@@ -81,10 +85,11 @@ for filename in obs_filepaths:
     img_filename = [img_file for img_file in imgs_filepaths if common_name in img_file][0]
     combined_filepaths.append((filename, img_filename))
 
-
+# Change the epochs here
 epochs = 10
 file_no = 0
 total_file = len(obs_filepaths) * epochs
+print("...Start Training...")
 for i in range(epochs):
     for filepath_obs, filepath_imgs in combined_filepaths:
         print()
