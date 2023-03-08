@@ -98,7 +98,7 @@ for i in range(epochs):
             df_obs = pd.read_csv(filepath_obs)
             df_imgs = pd.read_csv(filepath_imgs)
         except:
-            contine
+            continue
         obs = df_obs.iloc[:, 0:train_dims]
         imgs = df_imgs.iloc[:, 0:img_dims]
         
