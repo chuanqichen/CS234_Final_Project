@@ -94,8 +94,11 @@ for i in range(epochs):
     for filepath_obs, filepath_imgs in combined_filepaths:
         print()
         file_no += 1
-        df_obs = pd.read_csv(filepath_obs)
-        df_imgs = pd.read_csv(filepath_imgs)
+        try:
+            df_obs = pd.read_csv(filepath_obs)
+            df_imgs = pd.read_csv(filepath_imgs)
+        except:
+            contine
         obs = df_obs.iloc[:, 0:train_dims]
         imgs = df_imgs.iloc[:, 0:img_dims]
         
@@ -118,6 +121,8 @@ for i in range(epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            if i% 50 == 0:
+                torch.save(network.state_dict(), "model.pt") # saving the model        
 
 
 torch.save(network.state_dict(), "model.pt") # saving the model        
