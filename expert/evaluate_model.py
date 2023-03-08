@@ -15,8 +15,8 @@ network = MultiLayerCNN(
         img_input_height=64,
         img_input_width=64,
         output_size=7
-).to(device=device)
-network.load_state_dict(torch.load("model.pt"))
+)
+network.load_state_dict(torch.load("model.pt", map_location=torch.device(device)))
 
 # Run
 episode_no = 0
