@@ -15,7 +15,7 @@ network = MultiLayerCNN(
         img_input_height=64,
         img_input_width=64,
         output_size=7
-)
+).to(device=device)
 network.load_state_dict(torch.load("model.pt", map_location=torch.device(device)))
 
 # Run
@@ -46,7 +46,7 @@ while True:
                 obs["robot0_gripper_qvel"]
         ])
         img_flat = obs["agentview_image"].flatten()
-        obs_img = np.array([np.concatenate([obs_flat, img_flat])])
+        obs_img = np.array([np.concatenate([obs_flat, img_flat])]).astype(np.float32)
         # Act according to model
         action = network(np2torch(obs_img)).cpu().detach().numpy().flatten()
         actions.append(action)
