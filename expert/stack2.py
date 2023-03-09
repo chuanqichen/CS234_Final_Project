@@ -201,7 +201,6 @@ class Stack2(Stack):
 
             # Sample from the placement initializer for all objects
             object_placements = self.placement_initializer.sample()
-            print(object_placements.values())
 
             # Loop through all objects and reset their positions
             for obj_pos, obj_quat, obj in object_placements.values():
