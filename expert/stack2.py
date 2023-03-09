@@ -13,6 +13,9 @@ from robosuite.utils.observables import Observable, sensor
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.utils.transform_utils import convert_quat
 from robosuite.environments.manipulation.stack import Stack
+from robosuite.environments.base import register_env
+import numpy as np
+
 
 placement_initializer2=UniformRandomSampler(
         name="ObjectSampler",
@@ -27,11 +30,18 @@ placement_initializer2=UniformRandomSampler(
 
 
 class Stack2(Stack):    
+    def set_fixed_placement(self, fixed=False):
+        if fixed:
+            self.deterministic_reset = True
+        else:
+            self.deterministic_reset = False
+
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
+        self.set_fixed_placement(True)
 
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])
@@ -120,7 +130,6 @@ class Stack2(Stack):
             mujoco_robots=[robot.robot_model for robot in self.robots],
             mujoco_objects=self.cubes,
         )
-        self.deterministic_reset = True
 
     def _reset_internal(self):
         """
@@ -151,3 +160,4 @@ class Stack2(Stack):
                 for obj_pos, obj_quat, obj in object_placements.values():
                     self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
+register_env(Stack2)
