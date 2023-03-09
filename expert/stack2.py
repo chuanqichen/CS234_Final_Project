@@ -36,12 +36,72 @@ class Stack2(Stack):
         else:
             self.deterministic_reset = False
 
+    def __init__(
+        self,
+        robots,
+        env_configuration="default",
+        controller_configs=None,
+        gripper_types="default",
+        initialization_noise="default",
+        table_full_size=(0.8, 0.8, 0.05),
+        table_friction=(1.0, 5e-3, 1e-4),
+        use_camera_obs=True,
+        use_object_obs=True,
+        reward_scale=1.0,
+        reward_shaping=False,
+        placement_initializer=None,
+        has_renderer=False,
+        has_offscreen_renderer=True,
+        render_camera="frontview",
+        render_collision_mesh=False,
+        render_visual_mesh=True,
+        render_gpu_device_id=-1,
+        control_freq=20,
+        horizon=1000,
+        ignore_done=False,
+        hard_reset=True,
+        camera_names="agentview",
+        camera_heights=256,
+        camera_widths=256,
+        camera_depths=False,
+        camera_segmentations=None,  # {None, instance, class, element}
+        renderer="mujoco",
+        renderer_config=None,
+    ):
+        if placement_initializer == None:
+           self.set_fixed_placement(True)
+
+        super().__init__(
+            robots=robots,
+            env_configuration=env_configuration,
+            controller_configs=controller_configs,
+            gripper_types=gripper_types,
+            initialization_noise=initialization_noise,
+            use_camera_obs=use_camera_obs,
+            has_renderer=has_renderer,
+            has_offscreen_renderer=has_offscreen_renderer,
+            render_camera=render_camera,
+            render_collision_mesh=render_collision_mesh,
+            render_visual_mesh=render_visual_mesh,
+            render_gpu_device_id=render_gpu_device_id,
+            control_freq=control_freq,
+            horizon=horizon,
+            ignore_done=ignore_done,
+            hard_reset=hard_reset,
+            camera_names=camera_names,
+            camera_heights=camera_heights,
+            camera_widths=camera_widths,
+            camera_depths=camera_depths,
+            camera_segmentations=camera_segmentations,
+            renderer=renderer,
+            renderer_config=renderer_config,
+        )
+
     def _load_model(self):
         """
         Loads an xml model, puts it in self.model
         """
         super()._load_model()
-        self.set_fixed_placement(True)
 
         # Adjust base pose accordingly
         xpos = self.robots[0].robot_model.base_xpos_offset["table"](self.table_full_size[0])

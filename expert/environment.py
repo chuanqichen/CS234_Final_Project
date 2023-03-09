@@ -1,5 +1,5 @@
 """Script for Environment"""
-
+from stack2 import Stack2, placement_initializer2
 import numpy as np
 import robosuite as suite
 from robosuite.controllers import load_controller_config
@@ -27,7 +27,7 @@ class Environment:
     def create_env(self):
         # create environment instance
         env = suite.make(
-            env_name="Stack", # try with other tasks like "Stack" and "Door"
+            env_name="Stack2", # try with other tasks like "Stack" and "Door"
             robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
             gripper_types="default",
             controller_configs=self.controller_config,

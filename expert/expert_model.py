@@ -3,7 +3,7 @@ import robosuite as suite
 from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
 from robosuite.utils.placement_samplers import UniformRandomSampler
-
+from stack2 import Stack2, placement_initializer2
 
 ## from pyquaternion import Quaternion
 ## # Distance thresholds to move to next state
@@ -54,7 +54,7 @@ controller_config["uncouple_pos_ori"] = False
 
 # create environment instance
 env = suite.make(
-    env_name="Stack", # try with other tasks like "Stack" and "Door"
+    env_name="Stack2", # try with other tasks like "Stack" and "Door"
     robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
     gripper_types="default",
     controller_configs=controller_config,
