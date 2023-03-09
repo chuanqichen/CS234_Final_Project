@@ -4,6 +4,7 @@ from robosuite.controllers import load_controller_config
 import robosuite.utils.transform_utils as T
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from stack2 import Stack2, placement_initializer2
+from environment import Environment
 
 ## from pyquaternion import Quaternion
 ## # Distance thresholds to move to next state
@@ -53,32 +54,8 @@ controller_config["damping_ratio"] = 2
 controller_config["uncouple_pos_ori"] = False
 
 # create environment instance
-env = suite.make(
-    env_name="Stack2", # try with other tasks like "Stack" and "Door"
-    robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
-    gripper_types="default",
-    controller_configs=controller_config,
-    has_renderer=True,
-    render_camera="frontview",
-    has_offscreen_renderer=True,
-    control_freq=20,
-    horizon=200,
-    ignore_done=True,
-    ## use_object_obs=True,
-    ## use_camera_obs=True,
-    ## camera_heights=84,
-    ## camera_widths=84
-    placement_initializer=UniformRandomSampler(
-        name="ObjectSampler",
-        x_range=[-0.35,0.35],
-        y_range=[-0.35,0.35],
-        rotation=None,
-        ensure_object_boundary_in_range=False,
-        ensure_valid_placement=True,
-        reference_pos=np.array((0, 0, 0.8)),
-        z_offset=0.01
-    )
-)
+env_generator = Environment()
+env = env_generator.create_env(fixed_placement=False)
 scene_no = 0
 while True:
     print(f"------ Scene {scene_no} ------")
