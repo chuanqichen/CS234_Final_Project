@@ -24,7 +24,7 @@ class Environment:
                 z_offset=0.01
         )
 
-    def create_env(self):
+    def create_env(self, fixed_placement=False):
         # create environment instance
         env = suite.make(
             env_name="Stack2", # try with other tasks like "Stack" and "Door"
@@ -41,7 +41,7 @@ class Environment:
             use_camera_obs=True,
             camera_heights=64,
             camera_widths=64,
-            placement_initializer=self.placement_sampler
+            placement_initializer=self.placement_sampler if not fixed_placement else None
             #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )
         return env

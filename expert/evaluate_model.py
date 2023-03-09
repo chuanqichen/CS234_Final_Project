@@ -7,7 +7,7 @@ np.random.seed(1001)
 
 # Create environment instance
 env_generator = Environment()
-env = env_generator.create_env()
+env = env_generator.create_env(fixed_placement=False)
 
 # Load model
 network = MultiLayerCNN(

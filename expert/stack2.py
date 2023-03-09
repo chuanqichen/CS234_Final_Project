@@ -68,8 +68,6 @@ class Stack2(Stack):
         renderer="mujoco",
         renderer_config=None,
     ):
-        if placement_initializer == None:
-           self.set_fixed_placement(True)
 
         super().__init__(
             robots=robots,
@@ -96,6 +94,8 @@ class Stack2(Stack):
             renderer=renderer,
             renderer_config=renderer_config,
         )
+        if placement_initializer == None:
+           self.set_fixed_placement(True)
 
     def _load_model(self):
         """
