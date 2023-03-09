@@ -55,7 +55,7 @@ controller_config["uncouple_pos_ori"] = False
 
 # create environment instance
 env_generator = Environment()
-env = env_generator.create_env(fixed_placement=False)
+env = env_generator.create_env(fixed_placement=True)
 scene_no = 0
 while True:
     print(f"------ Scene {scene_no} ------")

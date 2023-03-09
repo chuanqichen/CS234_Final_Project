@@ -25,7 +25,7 @@ batch_size = 64
 # ---------------------------------------------------------------------------- #
 
 env_generator = Environment()
-env = env_generator.create_env()
+env = env_generator.create_env(fixed_placement=True)
 action_dim = env.action_dim
 with open(os.path.join(DATADIR, "obs_dims.json"), "r") as f:
     obs_dict = json.load(f)
