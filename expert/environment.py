@@ -15,8 +15,8 @@ class Environment:
 
         self.placement_sampler = UniformRandomSampler(
                 name="ObjectSampler",
-                x_range=[-0.35,0.35],
-                y_range=[-0.35,0.35],
+                x_range=[-0.85,0.85],
+                y_range=[-0.85,0.85],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
@@ -42,5 +42,6 @@ class Environment:
             camera_heights=64,
             camera_widths=64,
             placement_initializer=self.placement_sampler
+            #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )
         return env

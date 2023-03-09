@@ -19,8 +19,8 @@ import numpy as np
 
 placement_initializer2=UniformRandomSampler(
         name="ObjectSampler",
-        x_range=[-0.35,0.35],
-        y_range=[-0.35,0.35],
+        x_range=[-0.80, 0.85],
+        y_range=[-0.80, 0.85],
         rotation=None,
         ensure_object_boundary_in_range=False,
         ensure_valid_placement=True,

@@ -16,8 +16,8 @@ env = suite.make(
     camera_names="agentview",
     camera_heights=84,
     camera_widths=84,
-    #placement_initializer=placement_initializer2
-    placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
+    placement_initializer=placement_initializer2
+    #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
 )
 
 # reset the environment
