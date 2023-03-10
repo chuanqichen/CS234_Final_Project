@@ -19,6 +19,7 @@ if not os.path.exists(DATADIR):
     print("Directory doesn't exists!")
     sys.exit(1)
 batch_size = 64
+TRAINING_MODE = input("Enter training mode (pick, place, all): ").lower()
 
 # ---------------------------------------------------------------------------- #
 #                                  Environment                                 #
@@ -97,6 +98,12 @@ for i in range(epochs):
         try:
             df_obs = pd.read_csv(filepath_obs)
             df_imgs = pd.read_csv(filepath_imgs)
+            if TRAINING_MODE == "pick":
+                df_obs = df_obs[df_obs["subtask_id"] <= 4]
+                df_imgs = df_imgs[df_imgs["subtask_id"] <= 4]
+            elif TRAINING_MODE == "place":
+                df_obs = df_obs[df_obs["subtask_id"] > 4]
+                df_imgs = df_imgs[df_imgs["subtask_id"] > 4]
         except:
             continue
         obs = df_obs.iloc[:, 0:train_dims]
@@ -124,5 +131,10 @@ for i in range(epochs):
             if i% 50 == 0:
                 torch.save(network.state_dict(), "model.pt") # saving the model        
 
-
-torch.save(network.state_dict(), "model.pt") # saving the model        
+# saving the mode
+if TRAINING_MODE == "pick":
+    torch.save(network.state_dict(), "model_pick.pt") 
+elif TRAINING_MODE == "place":
+    torch.save(network.state_dict(), "model_place.pt") 
+else:
+    torch.save(network.state_dict(), "model.pt") 
