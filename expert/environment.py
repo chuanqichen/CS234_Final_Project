@@ -41,6 +41,7 @@ class Environment:
             use_camera_obs=True,
             camera_heights=64,
             camera_widths=64,
+            reward_shaping=True,
             placement_initializer=self.placement_sampler if not fixed_placement else None
             #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )

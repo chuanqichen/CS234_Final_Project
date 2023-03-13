@@ -1,0 +1,88 @@
+import gym
+import numpy as np
+
+from stable_baselines3 import PPO, TD3
+from stable_baselines3.common.noise import NormalActionNoise
+from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
+from stable_baselines3.common.evaluation import evaluate_policy
+
+from environment import Environment
+from robosuite.wrappers import GymWrapper
+
+np.random.seed(9)
+
+
+
+#
+#  TRAINING
+#
+
+# Create environment instance
+env_generator = Environment()
+env = env_generator.create_env()
+wrapped_env = GymWrapper(env)
+wrapped_env = Monitor(wrapped_env)
+        # Needed for extracting eprewmean and eplenmean
+wrapped_env = DummyVecEnv([lambda : wrapped_env])
+        # Needed for all environments (e.g. used for mulit-processing)
+wrapped_env = VecNormalize(wrapped_env)
+        # Needed for improving training when using MuJoCo envs?
+
+
+# Instantiate the agent
+## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
+model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)   
+        #TODO CUSTOMIZE MODEL ARCHITECTURE 
+        #TODO Prevent from using block observations?
+# Train the agent and display a progress bar
+model.learn(total_timesteps=int(1E5), progress_bar=True)
+# Save the agent
+## model.save("ppo_policy")
+model.save("td3_policy")
+del model  # delete trained model to demonstrate loading
+
+
+#
+#  TESTING
+#
+
+# Create environment instance
+test_env_generator = Environment()
+test_env = test_env_generator.create_env()
+wrapped_test_env = GymWrapper(test_env)
+## wrapped_env = Monitor(wrapped_env)
+        # Needed for extracting eprewmean and eplenmean
+wrapped_test_env = DummyVecEnv([lambda : wrapped_test_env])
+        # Needed for all environments (e.g. used for mulit-processing)
+wrapped_test_env = VecNormalize(wrapped_test_env)
+        # Needed for improving training when using MuJoCo envs?
+wrapped_test_env.training = False
+
+# Load the trained agent
+# NOTE: if you have loading issue, you can pass `print_system_info=True`
+# to compare the system on which the model was trained vs the current one
+# model = DQN.load("dqn_lunar", env=env, print_system_info=True)
+## model = PPO.load("ppo_policy", env=wrapped_test_env)
+model = TD3.load("td3_policy", env=wrapped_test_env)
+
+# Evaluate the agent
+# NOTE: If you use wrappers with your environment that modify rewards,
+#       this will be reflected here. To evaluate with original rewards,
+#       wrap environment in a "Monitor" wrapper before other wrappers.
+## mean_reward, std_reward = evaluate_policy(model, model.get_env(), 
+        ## n_eval_episodes=10)
+
+# Run trained agent
+obs = wrapped_test_env.reset()
+for i in range(100):
+    print(f"Step {i}", end="\r")
+    action, _states = model.predict(obs, deterministic=True)
+    obs, rewards, dones, info = wrapped_test_env.step(action)
+    wrapped_test_env.render()
+    if True in dones:
+        obs = wrapped_test_env.reset()
+wrapped_test_env.close()
+
+

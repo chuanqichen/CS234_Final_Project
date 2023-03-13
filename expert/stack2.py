@@ -219,4 +219,7 @@ class Stack2(Stack):
                 for obj_pos, obj_quat, obj in object_placements.values():
                     self.sim.data.set_joint_qpos(obj.joints[0], np.concatenate([np.array(obj_pos), np.array(obj_quat)]))
 
+    def render(self, **kwargs):
+        super().render()  # For compatibility with StableBaselines mode argument
+
 register_env(Stack2)
