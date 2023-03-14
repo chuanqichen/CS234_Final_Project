@@ -27,7 +27,7 @@ class Environment:
     def create_env(self, fixed_placement=False, use_object_obs=True):
         # create environment instance
         env = suite.make(
-            env_name="Stack", # try with other tasks like "Stack" and "Door"
+            env_name="Stack2", # try with other tasks like "Stack" and "Door"
             robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
             gripper_types="default",
             controller_configs=self.controller_config,
