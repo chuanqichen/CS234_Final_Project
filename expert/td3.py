@@ -43,7 +43,7 @@ model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)
         #TODO CUSTOMIZE MODEL ARCHITECTURE 
         #TODO Prevent from using block observations?
 # Train the agent and display a progress bar
-model.learn(total_timesteps=int(1E5), progress_bar=True, callback=callback_max_episodes)
+model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
 # Save the agent
 model.save(os.path.join(dirpath, obs_filename))
 del model  # delete trained model to demonstrate loading
