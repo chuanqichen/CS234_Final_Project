@@ -7,7 +7,7 @@ np.random.seed(1001)
 
 # Create environment instance
 env_generator = Environment()
-env = env_generator.create_env(fixed_placement=False)
+env = env_generator.create_env(fixed_placement=True)
 
 # Load model
 network = MultiLayerCNN(
@@ -16,7 +16,7 @@ network = MultiLayerCNN(
         img_input_width=64,
         output_size=7
 ).to(device=device)
-network.load_state_dict(torch.load("model.pt", map_location=torch.device(device)))
+network.load_state_dict(torch.load("model_pick.pt", map_location=torch.device(device)))
 
 # Run
 episode_no = 0

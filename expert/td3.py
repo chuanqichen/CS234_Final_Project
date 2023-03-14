@@ -7,6 +7,10 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
+from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
+
+# Stops training when the model reaches the maximum number of episodes
+callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
 
 from environment import Environment
 from robosuite.wrappers import GymWrapper
@@ -37,7 +41,7 @@ model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)
         #TODO CUSTOMIZE MODEL ARCHITECTURE 
         #TODO Prevent from using block observations?
 # Train the agent and display a progress bar
-model.learn(total_timesteps=int(1E5), progress_bar=True)
+model.learn(total_timesteps=int(1E5), progress_bar=True, callback=callback_max_episodes)
 # Save the agent
 ## model.save("ppo_policy")
 model.save("td3_policy")
