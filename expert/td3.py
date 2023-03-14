@@ -45,8 +45,7 @@ model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)
 # Train the agent and display a progress bar
 model.learn(total_timesteps=int(1E5), progress_bar=True, callback=callback_max_episodes)
 # Save the agent
-## model.save("ppo_policy")
-model.save("td3_policy")
+model.save(os.path.join(dirpath, obs_filename))
 del model  # delete trained model to demonstrate loading
 
 #
@@ -69,8 +68,8 @@ if operation == 'test' or operation == 'both':
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
-    ## model = PPO.load("ppo_policy", env=wrapped_test_env)
-    model = TD3.load("td3_policy", env=wrapped_test_env)
+    ## model = PPO.load(os.path.join(dirpath, obs_filename), env=wrapped_test_env)
+    model = TD3.load(os.path.join(dirpath, obs_filename), env=wrapped_test_env)
 
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,
