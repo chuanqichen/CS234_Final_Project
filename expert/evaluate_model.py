@@ -14,7 +14,7 @@ network = MultiLayerCNN(
         obs_input_size=32,
         img_input_height=64,
         img_input_width=64,
-        output_size=7
+        output_size=4
 ).to(device=device)
 network.load_state_dict(torch.load("model_pick.pt", map_location=torch.device(device)))
 
