@@ -7,16 +7,16 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 
 class Environment:
     def __init__(self):
-        self.controller_config = load_controller_config(default_controller="OSC_POSE")
-        self.controller_config["control_delta"] = False  # Use absolute position
-        self.controller_config["kp"] = 15  
-        self.controller_config["damping_ratio"] = 2 
-        self.controller_config["uncouple_pos_ori"] = False
+        self.controller_config = load_controller_config(
+                default_controller="OSC_POSITION")
+        self.controller_config["control_delta"] = True  # Use relative position
+        self.controller_config["kp"] = 1500
+        self.controller_config["damping_ratio"] = 1
 
         self.placement_sampler = UniformRandomSampler(
                 name="ObjectSampler",
-                x_range=[-0.85,0.85],
-                y_range=[-0.85,0.85],
+                x_range=[-0.15,0.15],
+                y_range=[-0.15,0.15],
                 rotation=None,
                 ensure_object_boundary_in_range=False,
                 ensure_valid_placement=True,
@@ -27,7 +27,7 @@ class Environment:
     def create_env(self, fixed_placement=False):
         # create environment instance
         env = suite.make(
-            env_name="Stack2", # try with other tasks like "Stack" and "Door"
+            env_name="Stack", # try with other tasks like "Stack" and "Door"
             robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
             gripper_types="default",
             controller_configs=self.controller_config,
