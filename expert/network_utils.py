@@ -105,6 +105,7 @@ class MultiLayerCNNFeaturesExtractor(BaseFeaturesExtractor):
         )
 
     def forward(self, x):
+        x = x.to(device)
         obs = x[:,:self.OBS_SIZE]
         img = x[:,self.OBS_SIZE:].reshape(-1, self.IMG_HEIGHT, self.IMG_WIDTH, 3)
         img = img.permute(0, 3, 1, 2)
