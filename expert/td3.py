@@ -30,7 +30,7 @@ if operation == 'train' or operation == 'both':
     # Create environment instance
     env_generator = Environment()
     env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
-            use_camera_obs=False)
+            use_camera_obs=False, ignore_done=False)
     wrapped_env = GymWrapper(env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
@@ -57,7 +57,7 @@ if operation == 'test' or operation == 'both':
     # Create environment instance
     test_env_generator = Environment()
     test_env = test_env_generator.create_env(fixed_placement=False,
-            use_object_obs=True, use_camera_obs=False)
+            use_object_obs=True, use_camera_obs=False, ignore_done=False)
     wrapped_test_env = GymWrapper(test_env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
