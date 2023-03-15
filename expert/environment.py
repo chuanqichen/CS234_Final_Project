@@ -36,7 +36,7 @@ class Environment:
             render_camera="frontview",
             has_offscreen_renderer=True,
             control_freq=20,
-            horizon=200,
+            horizon=600,
             ignore_done=ignore_done,
             use_object_obs=use_object_obs,
             use_camera_obs=use_camera_obs,

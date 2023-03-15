@@ -41,11 +41,12 @@ if operation == 'train' or operation == 'both':
 
     # Instantiate the agent
     ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
-    model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)   
+    model = TD3("MlpPolicy", wrapped_env, learning_rate=0.01, verbose=1, 
+            buffer_size=2048, learning_starts=100, gamma=0.99)   
             #TODO CUSTOMIZE MODEL ARCHITECTURE 
             #TODO Prevent from using block observations?
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E4), progress_bar=True, log_interval=10)
+    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
