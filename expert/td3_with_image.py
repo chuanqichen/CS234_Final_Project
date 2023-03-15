@@ -71,8 +71,8 @@ if operation == 'train' or operation == 'both':
         gamma=0.98,
         policy_kwargs=dict(
             net_arch=dict(
-                pi=[256, 128, 64],
-                qf=[256, 128, 64],
+                pi=[256, 128],
+                qf=[256, 128],
             ),
             features_extractor_class=MultiLayerCNNFeaturesExtractor,
             features_extractor_kwargs=dict(
