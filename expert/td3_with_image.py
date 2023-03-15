@@ -23,6 +23,11 @@ operation = input("Operation ('train', 'test', or 'both'): ")
 dirpath = input("Enter dirpath: ")
 filename = input("Enter filename: ") 
 
+from OpenGL import error as gl_error
+import warnings
+
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore", category=gl_error.Error)
 
 #
 #  TRAINING
