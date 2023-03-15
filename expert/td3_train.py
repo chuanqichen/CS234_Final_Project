@@ -16,7 +16,6 @@ from network_utils import MultiLayerCNNFeaturesExtractor
 callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
 
 from environment import Environment, CustomWrapper
-# from robosuite.wrappers import GymWrapper
 
 np.random.seed(9)
 
@@ -53,18 +52,10 @@ if operation == 'train' or operation == 'both':
 
 
     wrapped_env = CustomWrapper(env)
-
-    ## wrapped_env = Monitor(wrapped_env)
-    ## # Needed for extracting eprewmean and eplenmean
     wrapped_env = DummyVecEnv([lambda : wrapped_env])
-#     obs = wrapped_env.reset()
-#     print(wrapped_env.keys())
-    # Needed for all environments (e.g. used for mulit-processing)
     wrapped_env = VecNormalize(wrapped_env)
-    # Needed for improving training when using MuJoCo envs?
 
     # Instantiate the agent
-    ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
     model = TD3(
         "MlpPolicy",
         wrapped_env,
