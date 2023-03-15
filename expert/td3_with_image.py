@@ -31,7 +31,7 @@ if operation == 'train' or operation == 'both':
     # Create environment instance
     env_generator = Environment()
     env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
-                                   use_camera_obs=True)
+                                   use_camera_obs=True, ignore_done=False)
     obs = env.reset()
     obs_vector = np.concatenate([
         v for k, v in obs.items() if k in [
@@ -61,6 +61,9 @@ if operation == 'train' or operation == 'both':
         wrapped_env,
         verbose=1,
         buffer_size=2048,
+        learning_rate=0.01,
+        learning_starts=100,
+        gamma=0.99,
         policy_kwargs=dict(
             net_arch=dict(
                 pi=[],
