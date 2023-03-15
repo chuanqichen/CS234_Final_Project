@@ -61,18 +61,16 @@ if operation == 'train' or operation == 'both':
     wrapped_env = VecNormalize(wrapped_env)
 
     # Instantiate the agent
-    model = TD3(
+    model = PPO(
         "MlpPolicy",
         wrapped_env,
         verbose=1,
-        buffer_size=2048,
         learning_rate=0.0001,
-        learning_starts=100,
         gamma=0.98,
         policy_kwargs=dict(
             net_arch=dict(
                 pi=[],
-                qf=[],
+                vf=[],
             ),
             features_extractor_class=MultiLayerCNNFeaturesExtractor,
             features_extractor_kwargs=dict(
@@ -111,7 +109,7 @@ if operation == 'test' or operation == 'both':
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
     ## model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
-    model = TD3.load(os.path.join(dirpath, filename), env=wrapped_test_env)
+    model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
 
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,
