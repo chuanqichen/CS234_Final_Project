@@ -4,6 +4,7 @@ import numpy as np
 import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.utils.placement_samplers import UniformRandomSampler
+from robosuite.wrappers import GymWrapper
 
 class Environment:
     def __init__(self):
@@ -47,3 +48,40 @@ class Environment:
             #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )
         return env
+
+class CustomWrapper(GymWrapper):
+    def __init__(self, env, keys=None):
+        super().__init__(env, keys)
+
+    def _flatten_obs(self, obs_dict, verbose=False):
+        """
+        Filters keys of interest out and concatenate the information.
+        Args:
+            obs_dict (OrderedDict): ordered dictionary of observations
+            verbose (bool): Whether to print out to console as observation keys are processed
+        Returns:
+            np.array: observations flattened into a 1d array
+        """
+        obs_vector = np.concatenate([
+            v for k, v in obs_dict.items() if k in [
+                "robot0_joint_pos_cos",
+                "robot0_joint_pos_sin",
+                "robot0_joint_vel",
+                "robot0_eef_pos",
+                "robot0_eef_quat",
+                "robot0_gripper_qpos",
+                "robot0_gripper_qvel"
+            ]
+        ])
+        obs_img = obs_dict["agentview_image"]
+        obs_vector = np.concatenate([obs_vector, obs_img.flatten()])
+        return obs_vector
+    
+
+if __name__ == "__main__":
+    env_generator = Environment()
+    env = env_generator.create_env()
+    env = CustomWrapper(env)
+    obs = env.reset()
+    print(obs.shape)
+    print(type(obs))
