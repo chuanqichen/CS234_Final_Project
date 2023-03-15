@@ -63,8 +63,8 @@ if operation == 'train' or operation == 'both':
         buffer_size=2048,
         policy_kwargs=dict(
             net_arch=dict(
-                pi=[128, 128],
-                qf=[128, 128],
+                pi=[],
+                qf=[],
             ),
             features_extractor_class=MultiLayerCNNFeaturesExtractor,
             features_extractor_kwargs=dict(
