@@ -82,7 +82,7 @@ if operation == 'train' or operation == 'both':
         )
     )
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E6), progress_bar=True, log_interval=10)
+    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
