@@ -30,7 +30,7 @@ if operation == 'train' or operation == 'both':
     # Create environment instance
     env_generator = Environment()
     env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
-            use_camera_obs=False)
+            use_camera_obs=False, ignore_done=False)
     wrapped_env = GymWrapper(env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
@@ -41,11 +41,12 @@ if operation == 'train' or operation == 'both':
 
     # Instantiate the agent
     ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
-    model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)   
+    model = TD3("MlpPolicy", wrapped_env, learning_rate=0.01, verbose=1, 
+            buffer_size=2048, learning_starts=100, gamma=0.99)   
             #TODO CUSTOMIZE MODEL ARCHITECTURE 
             #TODO Prevent from using block observations?
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E4), progress_bar=True, log_interval=10)
+    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
@@ -57,7 +58,7 @@ if operation == 'test' or operation == 'both':
     # Create environment instance
     test_env_generator = Environment()
     test_env = test_env_generator.create_env(fixed_placement=False,
-            use_object_obs=True, use_camera_obs=False)
+            use_object_obs=True, use_camera_obs=False, ignore_done=False)
     wrapped_test_env = GymWrapper(test_env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
