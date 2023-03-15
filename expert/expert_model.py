@@ -33,7 +33,7 @@ while True:
     cubeB_pos = obs["cubeB_pos"]
     # Red cube (A)
     A_ungrasped = np.concatenate([
-            cubeA_pos, 
+            cubeA_pos + [0, 0, -0.005], 
             [-1]
     ])
     A_primed_ungrasped = A_ungrasped + [0, 0, .1, 0]
@@ -41,7 +41,7 @@ while True:
     A_primed_grasped = np.concatenate([A_primed_ungrasped[:3], [1]])
     # Green cube (B)
     B_ungrasped = np.concatenate([
-            cubeB_pos + [0, 0, 0.03], 
+            cubeB_pos + [0, 0, 0.04], 
             [-1]
     ])
     B_primed_ungrasped = B_ungrasped + [0, 0, .1, 0]
