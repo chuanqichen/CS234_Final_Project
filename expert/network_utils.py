@@ -68,32 +68,23 @@ class MultiLayerCNNFeaturesExtractor(BaseFeaturesExtractor):
         self.IMG_WIDTH = img_input_width
         self.IMG_HEIGHT = img_input_height
         self.DENSE_OUTPUT = features_dim
-        self.CNN_OUTPUT_SIZE = 243
+        self.CNN_OUTPUT_SIZE = 81
 
         self.cnn_stack = nn.Sequential(
             nn.Conv2d(in_channels=3, out_channels=27, kernel_size=3, padding=0, stride=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2,2), stride=2),
-            nn.Conv2d(in_channels=27, out_channels=81, kernel_size=3, padding=0, stride=1),
-            nn.ReLU(),
-            nn.MaxPool2d(kernel_size=(2,2), stride=2),
-            nn.Conv2d(in_channels=81, out_channels=self.CNN_OUTPUT_SIZE, kernel_size=3, padding=0, stride=1),
+            nn.Conv2d(in_channels=27, out_channels=self.CNN_OUTPUT_SIZE, kernel_size=3, padding=0, stride=1),
             nn.ReLU(),
             nn.MaxPool2d(kernel_size=(2,2), stride=2)
         )
         self.cnn_output_width = int((self.IMG_WIDTH - 3 + 1) / 2)
         self.cnn_output_width = int(np.floor((self.cnn_output_width - 3 + 1) / 2))
-        self.cnn_output_width = int(np.floor((self.cnn_output_width - 3 + 1) / 2))
         self.cnn_output_height = int((self.IMG_HEIGHT - 3 + 1) / 2)
-        self.cnn_output_height = int(np.floor((self.cnn_output_height - 3 + 1) / 2))
         self.cnn_output_height = int(np.floor((self.cnn_output_height - 3 + 1) / 2))
 
         self.dense_stack = nn.Sequential(
             nn.Linear(in_features=self.OBS_SIZE, out_features=self.DENSE_OUTPUT),
-            nn.ReLU(),
-            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.DENSE_OUTPUT),
-            nn.ReLU(),
-            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.DENSE_OUTPUT),
             nn.ReLU()
         )
         self.combined_stack = nn.Sequential(

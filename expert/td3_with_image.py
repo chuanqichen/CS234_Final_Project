@@ -71,15 +71,15 @@ if operation == 'train' or operation == 'both':
         gamma=0.98,
         policy_kwargs=dict(
             net_arch=dict(
-                pi=[],
-                qf=[],
+                pi=[256, 128, 64],
+                qf=[256, 128, 64],
             ),
             features_extractor_class=MultiLayerCNNFeaturesExtractor,
             features_extractor_kwargs=dict(
                 obs_input_size=obs_input_size,
                 img_input_width=obs_img_width,
                 img_input_height=obs_img_height,
-                features_dim=128
+                features_dim=256
             )
         )
     )
