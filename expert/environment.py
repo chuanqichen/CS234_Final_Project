@@ -24,7 +24,8 @@ class Environment:
                 z_offset=0.01
         )
 
-    def create_env(self, fixed_placement=False, use_object_obs=True):
+    def create_env(self, fixed_placement=False, use_object_obs=True,
+            use_camera_obs=True):
         # create environment instance
         env = suite.make(
             env_name="Stack2", # try with other tasks like "Stack" and "Door"
@@ -36,9 +37,9 @@ class Environment:
             has_offscreen_renderer=True,
             control_freq=20,
             horizon=200,
-            ignore_done=True,
+            ignore_done=False,
             use_object_obs=use_object_obs,
-            use_camera_obs=True,
+            use_camera_obs=use_camera_obs,
             camera_heights=64,
             camera_widths=64,
             reward_shaping=True,
