@@ -1,3 +1,4 @@
+import os
 import gym
 import numpy as np
 
@@ -17,9 +18,9 @@ from robosuite.wrappers import GymWrapper
 
 np.random.seed(9)
 
-operation = input("Operation ('train', 'test', or 'both'):")
+operation = input("Operation ('train', 'test', or 'both'): ")
 dirpath = input("Enter dirpath: ")
-filepath = input("Enter filename: ") 
+filename = input("Enter filename: ") 
 
 
 #
@@ -28,7 +29,8 @@ filepath = input("Enter filename: ")
 if operation == 'train' or operation == 'both':
     # Create environment instance
     env_generator = Environment()
-    env = env_generator.create_env(fixed_placement=False, use_object_obs=False)
+    env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
+            use_camera_obs=False)
     wrapped_env = GymWrapper(env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
@@ -37,16 +39,16 @@ if operation == 'train' or operation == 'both':
     wrapped_env = VecNormalize(wrapped_env)
             # Needed for improving training when using MuJoCo envs?
 
-# Instantiate the agent
-## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
-model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)   
-        #TODO CUSTOMIZE MODEL ARCHITECTURE 
-        #TODO Prevent from using block observations?
-# Train the agent and display a progress bar
-model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
-# Save the agent
-model.save(os.path.join(dirpath, obs_filename))
-del model  # delete trained model to demonstrate loading
+    # Instantiate the agent
+    ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
+    model = TD3("MlpPolicy", wrapped_env, verbose=1, buffer_size=2048)   
+            #TODO CUSTOMIZE MODEL ARCHITECTURE 
+            #TODO Prevent from using block observations?
+    # Train the agent and display a progress bar
+    model.learn(total_timesteps=int(1E4), progress_bar=True, log_interval=10)
+    # Save the agent
+    model.save(os.path.join(dirpath, filename))
+    del model  # delete trained model to demonstrate loading
 
 #
 #  TESTING
@@ -54,7 +56,8 @@ del model  # delete trained model to demonstrate loading
 if operation == 'test' or operation == 'both':
     # Create environment instance
     test_env_generator = Environment()
-    test_env = test_env_generator.create_env()
+    test_env = test_env_generator.create_env(fixed_placement=False,
+            use_object_obs=True, use_camera_obs=False)
     wrapped_test_env = GymWrapper(test_env)
     ## wrapped_env = Monitor(wrapped_env)
             ## # Needed for extracting eprewmean and eplenmean
@@ -68,8 +71,8 @@ if operation == 'test' or operation == 'both':
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
-    ## model = PPO.load(os.path.join(dirpath, obs_filename), env=wrapped_test_env)
-    model = TD3.load(os.path.join(dirpath, obs_filename), env=wrapped_test_env)
+    ## model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
+    model = TD3.load(os.path.join(dirpath, filename), env=wrapped_test_env)
 
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,
