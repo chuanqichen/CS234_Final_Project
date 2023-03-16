@@ -11,6 +11,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
 
 from network_utils import MultiLayerCNNFeaturesExtractor
+from config import device, device_name
 
 # Stops training when the model reaches the maximum number of episodes
 callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
@@ -79,7 +80,8 @@ if operation == 'train' or operation == 'both':
                 img_input_height=obs_img_height,
                 features_dim=256
             )
-        )
+        ),
+	device=device_name
     )
     # Train the agent and display a progress bar
     model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
@@ -109,7 +111,7 @@ if operation == 'test' or operation == 'both':
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
     ## model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
-    model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
+    model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env, device=device_name)
 
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,
