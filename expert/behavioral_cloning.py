@@ -5,7 +5,8 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import pandas as pd
-from network_utils import MultiLayerCNN, np2torch, device
+from network_utils import MultiLayerCNN, np2torch
+from config import device, device_name
 from environment import Environment
 import matplotlib.pyplot as plt
 

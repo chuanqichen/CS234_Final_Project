@@ -1,7 +1,8 @@
 import numpy as np
 import torch
 from environment import Environment
-from network_utils import MultiLayerCNN, np2torch, device
+from network_utils import MultiLayerCNN, np2torch
+from config import device, device_name
 
 np.random.seed(1001)
 

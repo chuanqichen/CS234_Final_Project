@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import gymnasium as gym
 from stable_baselines3.common.torch_layers import BaseFeaturesExtractor
+from config import device, device_name
 
 class MultiLayerCNN(nn.Module):
 
@@ -107,14 +108,6 @@ class MultiLayerCNNFeaturesExtractor(BaseFeaturesExtractor):
         output = self.combined_stack(output)
         return output
 
-
-
-if torch.cuda.is_available():
-    device = torch.device("cuda")
-elif torch.backends.mps.is_available():
-     device = torch.device("mps")
-else:
-    device = torch.device("cpu")
 
 
 def np2torch(x, cast_double_to_float=True):
