@@ -47,7 +47,7 @@ class MultiLayerCNN(nn.Module):
                 out_features=self.DENSE_OUTPUT
             ),
             nn.ReLU(),
-            # nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.OUTPUT_SIZE)
+            nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.OUTPUT_SIZE)
         )
 
     def forward(self, x):

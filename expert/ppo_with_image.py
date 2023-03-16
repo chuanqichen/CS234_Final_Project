@@ -17,7 +17,7 @@ callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
 
 from environment import Environment, CustomWrapper
 
-np.random.seed(9)
+np.random.seed(90)
 
 operation = input("Operation ('train', 'test', or 'both'): ")
 dirpath = input("Enter dirpath: ")

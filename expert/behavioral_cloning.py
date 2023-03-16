@@ -129,7 +129,7 @@ for i in range(epochs):
             loss.backward()
             optimizer.step()
             if i% 50 == 0:
-                torch.save(network.state_dict(), "model.pt") # saving the model        
+                torch.save(network.state_dict(), "models.pt") # saving the model        
 
 # saving the mode
 if TRAINING_MODE == "pick":

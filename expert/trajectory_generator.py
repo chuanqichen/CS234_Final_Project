@@ -30,7 +30,10 @@ if not os.path.exists(dirpath):
 
 # create environment instance
 env_generator = Environment()
-env = env_generator.create_env(fixed_placement=fixed_placement)
+env = env_generator.create_env(
+    fixed_placement=fixed_placement, use_camera_obs=True, use_object_obs=True
+)
+
 
 
 # ---------------------------------------------------------------------------- #
