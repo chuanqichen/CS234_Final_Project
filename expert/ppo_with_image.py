@@ -36,7 +36,7 @@ with warnings.catch_warnings():
 if operation == 'train' or operation == 'both':
     # Create environment instance
     env_generator = Environment()
-    env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
+    env = env_generator.create_env(fixed_placement=True, use_object_obs=True,
                                    use_camera_obs=True, ignore_done=False)
     obs = env.reset()
     obs_vector = np.concatenate([
@@ -105,6 +105,7 @@ if operation == 'test' or operation == 'both':
     wrapped_test_env = VecNormalize(wrapped_test_env)
             # Needed for improving training when using MuJoCo envs?
     wrapped_test_env.training = False
+    wrapped_test_env.norm_reward = False
 
     # Load the trained agent
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
