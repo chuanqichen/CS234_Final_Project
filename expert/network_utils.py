@@ -159,7 +159,7 @@ class NetworkBC(nn.Module):
             ## ),
             ## nn.ReLU(),
             ## nn.Linear(in_features=self.DENSE_OUTPUT, out_features=self.OUTPUT_SIZE)
-        )
+        ## )
 
     def forward(self, x):
         return self.dense_stack(x)
