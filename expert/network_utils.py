@@ -109,6 +109,51 @@ class MultiLayerCNNFeaturesExtractor(BaseFeaturesExtractor):
         output = self.combined_stack(output)
         return output
 
+class MultiLayerCNNPolicy(nn.Module):
+    def __init__(self, observation_space: gym.Space, obs_input_size, img_input_width, img_input_height, features_dim=128):
+        super().__init__()
+        self.OBS_SIZE = obs_input_size
+        self.IMG_WIDTH = img_input_width
+        self.IMG_HEIGHT = img_input_height
+        self.DENSE_OUTPUT = features_dim
+        self.CNN_OUTPUT_SIZE = 81
+
+        self.cnn_stack = nn.Sequential(
+            nn.Conv2d(in_channels=3, out_channels=27, kernel_size=3, padding=0, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=(2,2), stride=2),
+            nn.Conv2d(in_channels=27, out_channels=self.CNN_OUTPUT_SIZE, kernel_size=3, padding=0, stride=1),
+            nn.ReLU(),
+            nn.MaxPool2d(kernel_size=(2,2), stride=2)
+        )
+        self.cnn_output_width = int((self.IMG_WIDTH - 3 + 1) / 2)
+        self.cnn_output_width = int(np.floor((self.cnn_output_width - 3 + 1) / 2))
+        self.cnn_output_height = int((self.IMG_HEIGHT - 3 + 1) / 2)
+        self.cnn_output_height = int(np.floor((self.cnn_output_height - 3 + 1) / 2))
+
+        self.dense_stack = nn.Sequential(
+            nn.Linear(in_features=self.OBS_SIZE, out_features=self.DENSE_OUTPUT),
+            nn.ReLU()
+        )
+        self.combined_stack = nn.Sequential(
+            nn.Linear(
+                in_features=(self.cnn_output_height * self.cnn_output_width * self.CNN_OUTPUT_SIZE) + self.DENSE_OUTPUT,
+                out_features=self.DENSE_OUTPUT
+            ),
+            nn.ReLU()
+        )
+
+    def forward(self, x):
+        x = x.to(device)
+        obs = x[:,:self.OBS_SIZE]
+        img = x[:,self.OBS_SIZE:].reshape(-1, self.IMG_HEIGHT, self.IMG_WIDTH, 3)
+        img = img.permute(0, 3, 1, 2)
+        img_output = self.cnn_stack(img)
+        img_output = torch.flatten(input=img_output, start_dim=1)
+        obs_output = self.dense_stack(obs)
+        output = torch.cat([img_output, obs_output], 1)
+        output = self.combined_stack(output)
+        return output
 
 class NetworkBC(nn.Module):
     """ Network for behavioral cloning. """

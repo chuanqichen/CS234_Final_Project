@@ -1,4 +1,5 @@
 import os
+os.environ['DISPLAY'] = ':0.0'
 import gym
 import numpy as np
 
@@ -84,7 +85,8 @@ if operation == 'train' or operation == 'both':
                 features_dim=256
             )
         ),
-	device=device_name
+        device=device_name,
+        tensorboard_log="./logs/"
     )
     # Train the agent and display a progress bar
     # Save a checkpoint every 1000 steps
@@ -119,7 +121,14 @@ if operation == 'train' or operation == 'both':
     #callback = CallbackList([checkpoint_callback, eval_callback])
 
     #model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
-    model.learn(total_timesteps=int(1E5), progress_bar=True, callback=callback, log_interval=10)
+    model.learn(
+        total_timesteps=int(1E7),
+        progress_bar=True,
+        callback=callback,
+        log_interval=10,
+        tb_log_name="td3_run",
+        reset_num_timesteps=False
+    )
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading

@@ -135,4 +135,7 @@ robosuite
 trajectories
 
 # DS_Store
-DS_Store
+.DS_Store
+
+# logs
+logs
