@@ -9,6 +9,10 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
+from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import EvalCallback, CallbackList
+from network_utils import MultiLayerCNNFeaturesExtractor
+from config import device, device_name
 
 from network_utils import MultiLayerCNNFeaturesExtractor
 from config import device, device_name
@@ -84,6 +88,16 @@ if operation == 'train' or operation == 'both':
         device=device_name,
         tensorboard_log="./logs/"
     )
+    # Train the agent and display a progress bar
+    # Save a checkpoint every 1000 steps
+    checkpoint_callback = CheckpointCallback(
+        save_freq=5000,
+        save_path="./logs/",
+        name_prefix="rl_model",
+        save_replay_buffer=True,
+        save_vecnormalize=True,
+    )
+
     # Train the agent and display a progress bar
     model.learn(
         total_timesteps=int(1E5),
