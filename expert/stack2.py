@@ -228,4 +228,93 @@ class Stack2(Stack):
     def render(self, **kwargs):
         super().render()  # For compatibility with StableBaselines mode argument
 
+
+    def reward(self, action):
+        """
+        Reward function for the task.
+
+        Sparse un-normalized reward:
+
+            - a discrete reward of 2.0 is provided if the red block is stacked on the green block
+
+        Un-normalized components if using reward shaping:
+
+            - Reaching: in [0, 0.25], to encourage the arm to reach the cube
+            - Grasping: in {0, 0.25}, non-zero if arm is grasping the cube
+            - Lifting: in {0, 1}, non-zero if arm has lifted the cube
+            - Aligning: in [0, 0.5], encourages aligning one cube over the other
+            - Stacking: in {0, 2}, non-zero if cube is stacked on other cube
+
+        The reward is max over the following:
+
+            - Reaching + Grasping
+            - Lifting + Aligning
+            - Stacking
+
+        The sparse reward only consists of the stacking component.
+
+        Note that the final reward is normalized and scaled by
+        reward_scale / 2.0 as well so that the max score is equal to reward_scale
+
+        Args:
+            action (np array): [NOT USED]
+
+        Returns:
+            float: reward value
+        """
+        r_reach, r_lift, r_stack = self.staged_rewards()
+        if self.reward_shaping:
+            reward = max(r_reach, r_lift, r_stack)
+        else:
+            reward = 2.0 if r_stack > 0 else 0.0
+
+        if self.reward_scale is not None:
+            reward *= self.reward_scale / 2.0
+
+        return reward
+
+    def staged_rewards(self):
+        """
+        Helper function to calculate staged rewards based on current physical states.
+
+        Returns:
+            3-tuple:
+
+                - (float): reward for reaching and grasping
+                - (float): reward for lifting and aligning
+                - (float): reward for stacking
+        """
+        # reaching is successful when the gripper site is close to the center of the cube
+        cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
+        cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
+        gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
+        dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
+        #r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
+        r_reach = (1 - np.tanh(1.2 * dist)) * 0.25
+
+        # grasping reward
+        grasping_cubeA = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeA)
+        if grasping_cubeA:
+            r_reach += 0.25
+
+        # lifting is successful when the cube is above the table top by a margin
+        cubeA_height = cubeA_pos[2]
+        table_height = self.table_offset[2]
+        cubeA_lifted = cubeA_height > table_height + 0.04
+        r_lift = 1.0 if cubeA_lifted else 0.0
+
+        # Aligning is successful when cubeA is right above cubeB
+        if cubeA_lifted:
+            horiz_dist = np.linalg.norm(np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2]))
+            r_lift += 0.5 * (1 - np.tanh(horiz_dist))
+
+        # stacking is successful when the block is lifted and the gripper is not holding the object
+        r_stack = 0
+        cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
+        if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
+            r_stack = 2.0
+
+        return r_reach, r_lift, r_stack
+
+
 register_env(Stack2)
