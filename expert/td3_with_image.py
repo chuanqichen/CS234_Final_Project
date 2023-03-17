@@ -24,7 +24,7 @@ np.random.seed(9)
 def make_env(train=False):
     # Create environment instance
     env_generator = Environment()
-    env = env_generator.create_env(fixed_placement=False,
+    env = env_generator.create_env(fixed_placement=True,
             use_object_obs=True, use_camera_obs=True, ignore_done=False)
     wrapped_env = CustomWrapper(env)
     ## wrapped_env = Monitor(wrapped_env)
@@ -117,7 +117,7 @@ if operation == 'train' or operation == 'both':
     callback = CallbackList([checkpoint_callback, eval_callback])
 
     model.learn(
-        total_timesteps=int(4E3),
+        total_timesteps=int(1E7),
         progress_bar=True,
         callback=callback,
         log_interval=10,
