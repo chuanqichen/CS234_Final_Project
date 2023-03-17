@@ -66,7 +66,7 @@ if operation == 'train' or operation == 'both':
         "MlpPolicy",
         wrapped_env,
         verbose=1,
-        buffer_size=2048,
+        buffer_size=4096,
         learning_rate=0.0001,
         learning_starts=100,
         gamma=0.98,
@@ -86,7 +86,8 @@ if operation == 'train' or operation == 'both':
 	device=device_name
     )
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
+    #model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
+    model.learn(total_timesteps=int(5E5))
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
