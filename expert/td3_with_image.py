@@ -9,28 +9,36 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
-from stable_baselines3.common.callbacks import CheckpointCallback
-from stable_baselines3.common.callbacks import EvalCallback, CallbackList
+from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
 from network_utils import MultiLayerCNNFeaturesExtractor
 from config import device, device_name
-
-# Stops training when the model reaches the maximum number of episodes
-callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
-
 from environment import Environment, CustomWrapper
-
-np.random.seed(9)
-
-operation = input("Operation ('train', 'test', or 'both'): ")
-dirpath = input("Enter dirpath: ")
-filename = input("Enter filename: ") 
-
 from OpenGL import error as gl_error
 import warnings
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=gl_error.Error)
+
+np.random.seed(9)
+
+def make_env(train=False):
+    # Create environment instance
+    env_generator = Environment()
+    env = env_generator.create_env(fixed_placement=False,
+            use_object_obs=True, use_camera_obs=True, ignore_done=False)
+    wrapped_env = CustomWrapper(env)
+    ## wrapped_env = Monitor(wrapped_env)
+            ## # Needed for extracting eprewmean and eplenmean
+    wrapped_env = DummyVecEnv([lambda : wrapped_env])
+            # Needed for all environments (e.g. used for mulit-processing)
+    wrapped_env = VecNormalize(wrapped_env)
+            # Needed for improving training when using MuJoCo envs?
+    wrapped_env.training = train
+    return wrapped_env
+
+operation = input("Operation ('train', 'test', or 'both'): ")
+dirpath = input("Enter dirpath: ")
+filename = input("Enter filename: ") 
 
 #
 #  TRAINING
@@ -58,15 +66,12 @@ if operation == 'train' or operation == 'both':
     obs_img_width = obs_img.shape[1]
     action_dim = env.action_dim
 
+    # Instantiate the env and the agent for the stable baseline3
+    train_env = make_env(train=True)
 
-    wrapped_env = CustomWrapper(env)
-    wrapped_env = DummyVecEnv([lambda : wrapped_env])
-    wrapped_env = VecNormalize(wrapped_env)
-
-    # Instantiate the agent
     model = TD3(
         "MlpPolicy",
-        wrapped_env,
+        train_env,
         verbose=1,
         buffer_size=4096,
         learning_rate=0.0001,
@@ -89,40 +94,30 @@ if operation == 'train' or operation == 'both':
         tensorboard_log="./logs/"
     )
     # Train the agent and display a progress bar
-    # Save a checkpoint every 1000 steps
+    # Save a checkpoint every 5000 steps
     checkpoint_callback = CheckpointCallback(
         save_freq=5000,
-        save_path="./logs/",
+        save_path=os.path.join(dirpath,"logs"),
         name_prefix="rl_model",
         save_replay_buffer=True,
         save_vecnormalize=True,
     )
 
-    # Use deterministic actions for evaluation
-    # Create eval environment instance
-    test_env_generator = Environment()
-    test_env = test_env_generator.create_env(fixed_placement=False,
-            use_object_obs=True, use_camera_obs=True, ignore_done=False)
-    wrapped_test_env = CustomWrapper(test_env)
-    ## wrapped_env = Monitor(wrapped_env)
-            ## # Needed for extracting eprewmean and eplenmean
-    wrapped_test_env = DummyVecEnv([lambda : wrapped_test_env])
-            # Needed for all environments (e.g. used for mulit-processing)
-    wrapped_test_env = VecNormalize(wrapped_test_env)
-            # Needed for improving training when using MuJoCo envs?
-    wrapped_test_env.training = False
-    eval_env = wrapped_test_env
-    eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"),
+    # Stops training when the model reaches the maximum number of episodes
+    callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
+
+    # Stop training if there is no improvement after more than 3 evaluations
+    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=10, min_evals=5, verbose=1)
+    eval_env = make_env(train=False)
+    eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
                              log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
                              deterministic=True, render=False)
 
     # Create the callback list
-    callback = CallbackList([eval_callback])
-    #callback = CallbackList([checkpoint_callback, eval_callback])
+    callback = CallbackList([checkpoint_callback, eval_callback])
 
-    #model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
     model.learn(
-        total_timesteps=int(1E7),
+        total_timesteps=int(4E3),
         progress_bar=True,
         callback=callback,
         log_interval=10,
@@ -137,18 +132,7 @@ if operation == 'train' or operation == 'both':
 #  TESTING
 #
 if operation == 'test' or operation == 'both':
-    # Create environment instance
-    test_env_generator = Environment()
-    test_env = test_env_generator.create_env(fixed_placement=False,
-            use_object_obs=True, use_camera_obs=True, ignore_done=False)
-    wrapped_test_env = CustomWrapper(test_env)
-    ## wrapped_env = Monitor(wrapped_env)
-            ## # Needed for extracting eprewmean and eplenmean
-    wrapped_test_env = DummyVecEnv([lambda : wrapped_test_env])
-            # Needed for all environments (e.g. used for mulit-processing)
-    wrapped_test_env = VecNormalize(wrapped_test_env)
-            # Needed for improving training when using MuJoCo envs?
-    wrapped_test_env.training = False
+    wrapped_test_env =   make_env(train=False)
 
     # Load the trained agent
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
