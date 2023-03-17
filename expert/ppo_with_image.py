@@ -81,10 +81,17 @@ if operation == 'train' or operation == 'both':
                 features_dim=256
             )
         ),
-	device=device_name
+        device=device_name,
+        tensorboard_log="./logs/"
     )
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
+    model.learn(
+        total_timesteps=int(1E5),
+        progress_bar=True,
+        log_interval=10,
+        tb_log_name="ppo_run",
+        reset_num_timesteps=False
+    )
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
