@@ -15,6 +15,7 @@ callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
 
 from environment import Environment
 from robosuite.wrappers import GymWrapper
+from config import device, device_name
 
 np.random.seed(9)
 
@@ -42,7 +43,7 @@ if operation == 'train' or operation == 'both':
     # Instantiate the agent
     ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
     model = TD3("MlpPolicy", wrapped_env, learning_rate=0.0001, verbose=1, 
-            buffer_size=2048, learning_starts=100, gamma=0.99)   
+            buffer_size=2048, learning_starts=100, gamma=0.99, device=device_name)   
             #TODO CUSTOMIZE MODEL ARCHITECTURE 
             #TODO Prevent from using block observations?
     # Train the agent and display a progress bar
@@ -73,7 +74,7 @@ if operation == 'test' or operation == 'both':
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
     ## model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
-    model = TD3.load(os.path.join(dirpath, filename), env=wrapped_test_env)
+    model = TD3.load(os.path.join(dirpath, filename), env=wrapped_test_env, device=device_name)
 
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,

@@ -1,13 +1,14 @@
 import numpy as np
 import torch
 from environment import Environment
-from network_utils import MultiLayerCNN, np2torch, device
+from network_utils import MultiLayerCNN, np2torch
+from config import device, device_name
 
 np.random.seed(1001)
 
 # Create environment instance
 env_generator = Environment()
-env = env_generator.create_env(fixed_placement=True)
+env = env_generator.create_env(fixed_placement=False)
 
 # Load model
 network = MultiLayerCNN(
@@ -16,7 +17,7 @@ network = MultiLayerCNN(
         img_input_width=64,
         output_size=4
 ).to(device=device)
-network.load_state_dict(torch.load("model_pick.pt", map_location=torch.device(device)))
+network.load_state_dict(torch.load("model.pt", map_location=torch.device(device)))
 
 # Run
 episode_no = 0

@@ -5,7 +5,8 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import pandas as pd
-from network_utils import MultiLayerCNN, np2torch, device
+from network_utils import MultiLayerCNN, np2torch
+from config import device, device_name
 from environment import Environment
 import matplotlib.pyplot as plt
 
@@ -129,7 +130,7 @@ for i in range(epochs):
             loss.backward()
             optimizer.step()
             if i% 50 == 0:
-                torch.save(network.state_dict(), "model.pt") # saving the model        
+                torch.save(network.state_dict(), "models.pt") # saving the model        
 
 # saving the mode
 if TRAINING_MODE == "pick":
