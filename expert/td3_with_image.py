@@ -121,7 +121,7 @@ if operation == 'train' or operation == 'both':
 
     #model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
     model.learn(
-        total_timesteps=int(1E5),
+        total_timesteps=int(1E7),
         progress_bar=True,
         callback=callback,
         log_interval=10,
