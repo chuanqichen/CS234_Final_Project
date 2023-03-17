@@ -9,7 +9,8 @@ from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import StopTrainingOnMaxEpisodes
-
+from stable_baselines3.common.callbacks import CheckpointCallback
+from stable_baselines3.common.callbacks import EvalCallback, CallbackList
 from network_utils import MultiLayerCNNFeaturesExtractor
 from config import device, device_name
 
@@ -66,7 +67,7 @@ if operation == 'train' or operation == 'both':
         "MlpPolicy",
         wrapped_env,
         verbose=1,
-        buffer_size=2048,
+        buffer_size=4096,
         learning_rate=0.0001,
         learning_starts=100,
         gamma=0.98,
@@ -86,7 +87,39 @@ if operation == 'train' or operation == 'both':
 	device=device_name
     )
     # Train the agent and display a progress bar
-    model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
+    # Save a checkpoint every 1000 steps
+    checkpoint_callback = CheckpointCallback(
+        save_freq=5000,
+        save_path="./logs/",
+        name_prefix="rl_model",
+        save_replay_buffer=True,
+        save_vecnormalize=True,
+    )
+
+    # Use deterministic actions for evaluation
+    # Create eval environment instance
+    test_env_generator = Environment()
+    test_env = test_env_generator.create_env(fixed_placement=False,
+            use_object_obs=True, use_camera_obs=True, ignore_done=False)
+    wrapped_test_env = CustomWrapper(test_env)
+    ## wrapped_env = Monitor(wrapped_env)
+            ## # Needed for extracting eprewmean and eplenmean
+    wrapped_test_env = DummyVecEnv([lambda : wrapped_test_env])
+            # Needed for all environments (e.g. used for mulit-processing)
+    wrapped_test_env = VecNormalize(wrapped_test_env)
+            # Needed for improving training when using MuJoCo envs?
+    wrapped_test_env.training = False
+    eval_env = wrapped_test_env
+    eval_callback = EvalCallback(eval_env, best_model_save_path="./model/",
+                             log_path="./model/", eval_freq=3000,
+                             deterministic=True, render=False)
+
+    # Create the callback list
+    callback = CallbackList([eval_callback])
+    #callback = CallbackList([checkpoint_callback, eval_callback])
+
+    #model.learn(total_timesteps=int(1E5), progress_bar=True, log_interval=10)
+    model.learn(total_timesteps=int(1E5), progress_bar=True, callback=callback, log_interval=10)
     # Save the agent
     model.save(os.path.join(dirpath, filename))
     del model  # delete trained model to demonstrate loading
