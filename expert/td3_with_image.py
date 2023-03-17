@@ -110,8 +110,8 @@ if operation == 'train' or operation == 'both':
             # Needed for improving training when using MuJoCo envs?
     wrapped_test_env.training = False
     eval_env = wrapped_test_env
-    eval_callback = EvalCallback(eval_env, best_model_save_path="./model/",
-                             log_path="./model/", eval_freq=3000,
+    eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"),
+                             log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
                              deterministic=True, render=False)
 
     # Create the callback list
