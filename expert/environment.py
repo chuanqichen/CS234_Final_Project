@@ -5,6 +5,8 @@ import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.wrappers import GymWrapper
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
 class Environment:
     def __init__(self):
@@ -48,6 +50,23 @@ class Environment:
             #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )
         return env
+
+    def make_sb_env(fixed_placement=True,
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False):
+        # Create environment instance
+        env_generator = Environment()
+        env = env_generator.create_env(fixed_placement,
+                use_object_obs, use_camera_obs, ignore_done)
+        wrapped_env = CustomWrapper(env)
+        ## wrapped_env = Monitor(wrapped_env)
+                ## # Needed for extracting eprewmean and eplenmean
+        wrapped_env = DummyVecEnv([lambda : wrapped_env])
+                # Needed for all environments (e.g. used for mulit-processing)
+        wrapped_env = VecNormalize(wrapped_env)
+                # Needed for improving training when using MuJoCo envs?
+        wrapped_env.training = train
+        return wrapped_env, env
+
 
 class CustomWrapper(GymWrapper):
     def __init__(self, env, keys=None):

@@ -9,32 +9,19 @@ from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
-from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
+from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
+from stable_baselines3.common.callbacks import BaseCallback, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
 from network_utils import MultiLayerCNNFeaturesExtractor
 from config import device, device_name
 from environment import Environment, CustomWrapper
 from OpenGL import error as gl_error
 import warnings
+from motion import goto_subtask
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=gl_error.Error)
 
 np.random.seed(9)
-
-def make_env(train=False):
-    # Create environment instance
-    env_generator = Environment()
-    env = env_generator.create_env(fixed_placement=True,
-            use_object_obs=True, use_camera_obs=True, ignore_done=False)
-    wrapped_env = CustomWrapper(env)
-    ## wrapped_env = Monitor(wrapped_env)
-            ## # Needed for extracting eprewmean and eplenmean
-    wrapped_env = DummyVecEnv([lambda : wrapped_env])
-            # Needed for all environments (e.g. used for mulit-processing)
-    wrapped_env = VecNormalize(wrapped_env)
-            # Needed for improving training when using MuJoCo envs?
-    wrapped_env.training = train
-    return wrapped_env
 
 operation = input("Operation ('train', 'test', or 'both'): ")
 dirpath = input("Enter dirpath: ")
@@ -45,9 +32,8 @@ filename = input("Enter filename: ")
 #
 if operation == 'train' or operation == 'both':
     # Create environment instance
-    env_generator = Environment()
-    env = env_generator.create_env(fixed_placement=False, use_object_obs=True,
-                                   use_camera_obs=True, ignore_done=False)
+    train_env, env = Environment.make_sb_env(fixed_placement=True,
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=True)
     obs = env.reset()
     obs_vector = np.concatenate([
         v for k, v in obs.items() if k in [
@@ -67,7 +53,7 @@ if operation == 'train' or operation == 'both':
     action_dim = env.action_dim
 
     # Instantiate the env and the agent for the stable baseline3
-    train_env = make_env(train=True)
+    #goto_subtask(env, target_subtask=2, train=False)
 
     model = TD3(
         "MlpPolicy",
@@ -108,14 +94,37 @@ if operation == 'train' or operation == 'both':
 
     # Stop training if there is no improvement after more than 3 evaluations
     stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=10, min_evals=5, verbose=1)
-    eval_env = make_env(train=False)
+    eval_env, _ = Environment.make_sb_env(fixed_placement=True,
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
     eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
                              log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
                              deterministic=True, render=False)
 
-    # Create the callback list
-    callback = CallbackList([checkpoint_callback, eval_callback])
+    class CustomCallback(BaseCallback):
+        def _on_training_start(self) -> None:
+            """
+            This method is called before the first rollout starts.
+            """
+            pass
+        
+        def _on_training_start(self) -> None:
+            pass
 
+        def _on_rollout_start(self) -> None:
+            goto_subtask(env, target_subtask=2, train=True)
+
+        def _on_step(self) -> bool:
+            return True
+
+        def _on_rollout_end(self) -> None:
+            pass
+
+        def _on_training_end(self) -> None:
+            pass
+
+    # Create the callback list
+    callback = CallbackList([checkpoint_callback, eval_callback, CustomCallback()])
+ 
     model.learn(
         total_timesteps=int(1E7),
         progress_bar=True,
@@ -132,15 +141,15 @@ if operation == 'train' or operation == 'both':
 #  TESTING
 #
 if operation == 'test' or operation == 'both':
-    wrapped_test_env =   make_env(train=False)
-
+    wrapped_test_env, env =   Environment.make_sb_env(fixed_placement=True,
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
     # Load the trained agent
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
     # to compare the system on which the model was trained vs the current one
     # model = DQN.load("dqn_lunar", env=env, print_system_info=True)
     ## model = PPO.load(os.path.join(dirpath, filename), env=wrapped_test_env)
     model = TD3.load(os.path.join(dirpath, filename), env=wrapped_test_env, device=device_name)
-
+    
     # Evaluate the agent
     # NOTE: If you use wrappers with your environment that modify rewards,
     #       this will be reflected here. To evaluate with original rewards,
@@ -150,6 +159,7 @@ if operation == 'test' or operation == 'both':
 
     # Run trained agent
     obs = wrapped_test_env.reset()
+    goto_subtask(env, target_subtask=2, train=False)
     for i in range(10000):
         print(f"Step {i}", end="\r")
         action, _states = model.predict(obs, deterministic=True)
@@ -157,5 +167,7 @@ if operation == 'test' or operation == 'both':
         wrapped_test_env.render()
         if True in dones:
             obs = wrapped_test_env.reset()
+            goto_subtask(env, target_subtask=2, train=False)
+
     wrapped_test_env.close()
 
