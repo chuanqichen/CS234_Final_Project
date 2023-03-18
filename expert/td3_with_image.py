@@ -90,10 +90,10 @@ if operation == 'train' or operation == 'both':
     )
 
     # Stops training when the model reaches the maximum number of episodes
-    callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
+    #callback_max_episodes = StopTrainingOnMaxEpisodes(max_episodes=5, verbose=1)
 
     # Stop training if there is no improvement after more than 3 evaluations
-    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=10, min_evals=5, verbose=1)
+    stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=50, min_evals=5, verbose=1)
     eval_env, _ = Environment.make_sb_env(fixed_placement=True,
                 use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
     eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
