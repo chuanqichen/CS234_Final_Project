@@ -24,6 +24,8 @@ with warnings.catch_warnings():
 np.random.seed(9)
 
 operation = input("Operation ('train', 'test', or 'both'): ")
+fixed_placement_input = input("Fixed placement y/n: ")
+fixed_placement = "y" in fixed_placement_input or "Y" in fixed_placement_input
 dirpath = input("Enter dirpath: ")
 filename = input("Enter filename: ") 
 
@@ -32,7 +34,7 @@ filename = input("Enter filename: ")
 #
 if operation == 'train' or operation == 'both':
     # Create environment instance
-    train_env, env = Environment.make_sb_env(fixed_placement=True,
+    train_env, env = Environment.make_sb_env(fixed_placement=fixed_placement,
                 use_object_obs=True, use_camera_obs=True, ignore_done=False, train=True)
     obs = env.reset()
     obs_vector = np.concatenate([
@@ -77,7 +79,7 @@ if operation == 'train' or operation == 'both':
             )
         ),
         device=device_name,
-        tensorboard_log="./logs/"
+        tensorboard_log=os.path.join(dirpath, "./logs/")
     )
     # Train the agent and display a progress bar
     # Save a checkpoint every 5000 steps
@@ -94,7 +96,7 @@ if operation == 'train' or operation == 'both':
 
     # Stop training if there is no improvement after more than 3 evaluations
     stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=50, min_evals=5, verbose=1)
-    eval_env, _ = Environment.make_sb_env(fixed_placement=True,
+    eval_env, _ = Environment.make_sb_env(fixed_placement=fixed_placement,
                 use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
     eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
                              log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
@@ -130,7 +132,7 @@ if operation == 'train' or operation == 'both':
         progress_bar=True,
         callback=callback,
         log_interval=10,
-        tb_log_name="td3_run",
+        tb_log_name=filename + "_td3_image_obs",
         reset_num_timesteps=False
     )
     # Save the agent
@@ -141,7 +143,7 @@ if operation == 'train' or operation == 'both':
 #  TESTING
 #
 if operation == 'test' or operation == 'both':
-    wrapped_test_env, env =   Environment.make_sb_env(fixed_placement=True,
+    wrapped_test_env, env =   Environment.make_sb_env(fixed_placement=fixed_placement,
                 use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
     # Load the trained agent
     # NOTE: if you have loading issue, you can pass `print_system_info=True`

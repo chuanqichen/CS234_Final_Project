@@ -61,7 +61,7 @@ class Environment:
             wrapped_env = CustomWrapperWithoutImage(env)
         else:
             wrapped_env = CustomWrapper(env)
-        ## wrapped_env = Monitor(wrapped_env)
+        wrapped_env = Monitor(wrapped_env)
                 ## # Needed for extracting eprewmean and eplenmean
         wrapped_env = DummyVecEnv([lambda : wrapped_env])
                 # Needed for all environments (e.g. used for mulit-processing)
