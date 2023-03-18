@@ -1,6 +1,7 @@
 name: cs234_final
 channels:
   - pytorch
+  - anaconda
   - conda-forge
   - defaults
 dependencies:
@@ -23,6 +24,7 @@ dependencies:
   - executing=1.2.0=pyhd8ed1ab_0
   - ffmpeg=4.2.2=h04105a8_0
   - freetype=2.12.1=h1192e45_0
+  - future=0.18.3=py39hca03da5_0
   - gettext=0.21.0=h826f4ad_0
   - giflib=5.2.1=h80987f9_3
   - gmp=6.2.1=hc377ac9_3
@@ -48,6 +50,7 @@ dependencies:
   - libopenblas=0.3.21=h269037a_0
   - libopus=1.3=h1a28f6b_1
   - libpng=1.6.37=hb8d0fd4_0
+  - libprotobuf=3.20.1=h98b2900_0
   - libsodium=1.0.18=h27ca646_1
   - libtasn1=4.16.0=h1a28f6b_0
   - libtiff=4.5.0=h313beb8_2
@@ -110,11 +113,15 @@ dependencies:
   - zstd=1.5.2=h8574219_0
   - pip:
       - absl-py==1.4.0
+      - cachetools==5.3.0
       - cloudpickle==2.2.1
       - contourpy==1.0.7
       - cycler==0.11.0
       - fonttools==4.39.0
       - glfw==2.5.7
+      - google-auth==2.16.2
+      - google-auth-oauthlib==0.4.6
+      - grpcio==1.51.3
       - gym==0.21.0
       - gym-notices==0.0.8
       - gymnasium==0.27.1
@@ -126,21 +133,34 @@ dependencies:
       - jsonpickle==3.0.1
       - kiwisolver==1.4.4
       - llvmlite==0.39.1
+      - markdown==3.4.1
       - markdown-it-py==2.2.0
+      - markupsafe==2.1.2
       - matplotlib==3.7.1
       - mdurl==0.1.2
       - mujoco==2.3.2
       - numba==0.56.4
+      - oauthlib==3.2.2
       - opencv-python==4.7.0.72
       - pandas==1.5.3
+      - protobuf==4.22.1
+      - pyasn1==0.4.8
+      - pyasn1-modules==0.2.8
       - pyopengl==3.1.6
       - pyparsing==3.0.9
       - pytz==2022.7.1
+      - requests-oauthlib==1.3.1
       - rich==13.3.2
       - robosuite==1.4.0
+      - rsa==4.9
       - scipy==1.10.1
       - stable-baselines3==1.7.0
+      - tb-nightly==2.13.0a20230317
+      - tensorboard==1.14.0
+      - tensorboard-data-server==0.7.0
+      - tensorboard-plugin-wit==1.8.1
       - termcolor==2.2.0
       - tqdm==4.65.0
+      - werkzeug==2.2.3
       - zipp==3.15.0
 prefix: /opt/homebrew/Caskroom/miniconda/base/envs/cs234_final
