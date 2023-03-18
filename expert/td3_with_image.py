@@ -60,7 +60,7 @@ if operation == 'train' or operation == 'both':
         train_env,
         verbose=1,
         buffer_size=4096,
-        learning_rate=0.0001,
+        learning_rate=0.001,
         learning_starts=100,
         gamma=0.98,
         policy_kwargs=dict(
@@ -126,7 +126,7 @@ if operation == 'train' or operation == 'both':
     callback = CallbackList([checkpoint_callback, eval_callback, CustomCallback()])
  
     model.learn(
-        total_timesteps=int(1E7),
+        total_timesteps=int(1E5),
         progress_bar=True,
         callback=callback,
         log_interval=10,
