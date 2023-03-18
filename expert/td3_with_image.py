@@ -12,7 +12,7 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 from stable_baselines3.common.callbacks import BaseCallback, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
 from network_utils import MultiLayerCNNFeaturesExtractor
-from config import device, device_name
+from config import device, device_name, linear_schedule
 from environment import Environment, CustomWrapper
 from OpenGL import error as gl_error
 import warnings
@@ -62,7 +62,7 @@ if operation == 'train' or operation == 'both':
         train_env,
         verbose=1,
         buffer_size=4096,
-        learning_rate=0.001,
+        learning_rate=linear_schedule(0.001),
         learning_starts=100,
         gamma=0.98,
         policy_kwargs=dict(
