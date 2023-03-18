@@ -57,7 +57,10 @@ class Environment:
         env_generator = Environment()
         env = env_generator.create_env(fixed_placement,
                 use_object_obs, use_camera_obs, ignore_done)
-        wrapped_env = CustomWrapper(env)
+        if not use_camera_obs:
+            wrapped_env = CustomWrapperWithoutImage(env)
+        else:
+            wrapped_env = CustomWrapper(env)
         ## wrapped_env = Monitor(wrapped_env)
                 ## # Needed for extracting eprewmean and eplenmean
         wrapped_env = DummyVecEnv([lambda : wrapped_env])
@@ -94,6 +97,32 @@ class CustomWrapper(GymWrapper):
         ])
         obs_img = obs_dict["agentview_image"]
         obs_vector = np.concatenate([obs_vector, obs_img.flatten()])
+        return obs_vector
+
+class CustomWrapperWithoutImage(GymWrapper):
+    def __init__(self, env, keys=None):
+        super().__init__(env, keys)
+
+    def _flatten_obs(self, obs_dict, verbose=False):
+        """
+        Filters keys of interest out and concatenate the information.
+        Args:
+            obs_dict (OrderedDict): ordered dictionary of observations
+            verbose (bool): Whether to print out to console as observation keys are processed
+        Returns:
+            np.array: observations flattened into a 1d array
+        """
+        obs_vector = np.concatenate([v for k, v in obs_dict.items()])
+        '''
+        To modify obs_vector to only includes our choice of observations:
+        obs_vector = np.concatenate([
+            v for k, v in obs_dict.items() if k in [
+                "obs_1",
+                "obs_2",
+                ...
+            ]
+        ])
+        '''
         return obs_vector
     
 
