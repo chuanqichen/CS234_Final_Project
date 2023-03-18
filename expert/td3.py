@@ -43,7 +43,14 @@ if operation == 'train' or operation == 'both':
     # Instantiate the agent
     ## model = PPO("MlpPolicy", wrapped_env, verbose=1)   
     model = TD3("MlpPolicy", wrapped_env, learning_rate=0.0001, verbose=1, 
-            buffer_size=2048, learning_starts=100, gamma=0.99, device=device_name)   
+            buffer_size=2048, learning_starts=100, gamma=0.99, device=device_name,   
+            policy_kwargs=dict(
+            net_arch=dict(
+                pi=[256, 128],  # 400, 300 defaut from TD3 paper
+                qf=[256, 128],
+            )
+            ))
+
             #TODO CUSTOMIZE MODEL ARCHITECTURE 
             #TODO Prevent from using block observations?
     # Train the agent and display a progress bar
