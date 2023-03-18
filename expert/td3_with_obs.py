@@ -78,7 +78,7 @@ if operation == 'train' or operation == 'both':
     # Stop training if there is no improvement after more than 3 evaluations
     stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=50, min_evals=5, verbose=1)
     eval_env, _ = Environment.make_sb_env(fixed_placement=True,
-                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
+                use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False)
     eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
                              log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
                              deterministic=True, render=False)
@@ -125,7 +125,7 @@ if operation == 'train' or operation == 'both':
 #
 if operation == 'test' or operation == 'both':
     wrapped_test_env, env =   Environment.make_sb_env(fixed_placement=True,
-                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False)
+                use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False)
     # Load the trained agent
     # NOTE: if you have loading issue, you can pass `print_system_info=True`
     # to compare the system on which the model was trained vs the current one
