@@ -6,7 +6,7 @@ from robosuite.utils.placement_samplers import UniformRandomSampler
 from stack2 import Stack2, placement_initializer2
 from environment import Environment, CustomWrapper
 
-def goto_subtask(env, target_subtask=2, train=True, log=False):
+def goto_subtask(env, start_subtask=2, train=True, log=False):
     scene_no = 0
     n_success = 0
     for i in range(1):
@@ -67,7 +67,7 @@ def goto_subtask(env, target_subtask=2, train=True, log=False):
         durations = [75, 100, 50, 10, 50, 100, 50, 10, 50, 75]
         reward = 0
         for i in range(np.sum(durations)):
-            if subtask > target_subtask: 
+            if subtask > start_subtask: 
                 break
             subtask = int(np.sum(i > np.cumsum(durations)))
             action = waypoints[subtask] - np.concatenate([robot0_eef_pos, [0]])
@@ -85,5 +85,5 @@ def goto_subtask(env, target_subtask=2, train=True, log=False):
 if __name__ == '__main__':
     train_env, env = Environment.make_env(train=True)
     while True:
-        goto_subtask(env, target_subtask=2, train=False, log=True)
+        goto_subtask(env, start_subtask=2, train=False, log=True)
  

@@ -16,18 +16,19 @@ def parse_args():
     parser.add_argument("--qf_arch", default="200,50", help="arch for qf (separated with comma), such as 200,50")  # policy architecture     
     parser.add_argument("--policy", default="TD3")               # Policy name
     parser.add_argument("--env", default="stack2")               # OpenAI gym environment name
+    parser.add_argument("--start_subtask", default=2, type=int)               # start subtask 
     parser.add_argument("--seed", default=0, type=int)              # Sets Gym, PyTorch and Numpy seeds
     parser.add_argument("--eval_freq", default=1e4, type=int)       # How often (time steps) we evaluate
     parser.add_argument("--max_timesteps", default=1e6, type=int)   # Max time steps to run environment
 
 	# TD3
-    parser.add_argument("--expl_noise", default=0.1)                # Std of Gaussian exploration noise
+    parser.add_argument("--action_noise", default=0.2)                # Std of Gaussian exploration noise : 0.1
     parser.add_argument("--batch_size", default=256, type=int)      # Batch size for both actor and critic
     parser.add_argument("--discount", default=0.99)                 # Discount factor
     parser.add_argument("--tau", default=0.005)                     # Target network update rate
-    parser.add_argument("--policy_noise", default=0.2)              # Noise added to target policy during critic update
-    parser.add_argument("--noise_clip", default=0.5)                # Range to clip target policy noise
-    parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates
+    parser.add_argument("--policy_noise", default=0.3)              # Noise added to target policy during critic update : 0.3
+    parser.add_argument("--noise_clip", default=0.7)                # Range to clip target policy noise : 0.5
+    parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates: 2
     args = parser.parse_args()
     return args 
 

@@ -55,7 +55,7 @@ if operation == 'train' or operation == 'both':
     action_dim = env.action_dim
 
     # Instantiate the env and the agent for the stable baseline3
-    #goto_subtask(env, target_subtask=2, train=False)
+    #goto_subtask(env, start_subtask=2, train=False)
 
     model = TD3(
         "MlpPolicy",
@@ -113,7 +113,7 @@ if operation == 'train' or operation == 'both':
             pass
 
         def _on_rollout_start(self) -> None:
-            goto_subtask(env, target_subtask=2, train=True)
+            goto_subtask(env, start_subtask=2, train=True)
 
         def _on_step(self) -> bool:
             return True
@@ -161,7 +161,7 @@ if operation == 'test' or operation == 'both':
 
     # Run trained agent
     obs = wrapped_test_env.reset()
-    goto_subtask(env, target_subtask=2, train=False)
+    goto_subtask(env, start_subtask=2, train=False)
     for i in range(10000):
         print(f"Step {i}", end="\r")
         action, _states = model.predict(obs, deterministic=True)
@@ -169,7 +169,7 @@ if operation == 'test' or operation == 'both':
         wrapped_test_env.render()
         if True in dones:
             obs = wrapped_test_env.reset()
-            goto_subtask(env, target_subtask=2, train=False)
+            goto_subtask(env, start_subtask=2, train=False)
 
     wrapped_test_env.close()
 

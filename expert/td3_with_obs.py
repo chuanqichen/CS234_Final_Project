@@ -17,6 +17,7 @@ from OpenGL import error as gl_error
 import warnings
 from motion import goto_subtask
 from cli import parse_args, save_confg
+#from pink import PinkNoiseDist, PinkActionNoise
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", category=gl_error.Error)
@@ -48,8 +49,19 @@ def train(args):
         print(f"\nUsing pi:{pi_arch}")
         print(f"Using qf:{qf_arch}")
         print(f"Timesteps: {timesteps}")
-        # Instantiate the env and the agent for the stable baseline3
-        #goto_subtask(env, target_subtask=2, train=False)
+        max_action = float(train_env.action_space.high[0])
+        seq_len = timesteps
+        action_dim = train_env.action_space.shape[-1]
+        kwargs = {
+                # TD3
+                #"action_noise": PinkActionNoise(args.action_noise, seq_len, action_dim),
+                "tau": args.tau,
+                "batch_size": args.batch_size,
+                "target_policy_noise": args.policy_noise * max_action,
+                "target_noise_clip": args.noise_clip * max_action,
+                "policy_delay": args.policy_freq,
+                "gamma": args.discount
+        }
 
         model = TD3(
             "MlpPolicy",
@@ -58,7 +70,6 @@ def train(args):
             buffer_size=4096,
             learning_rate=linear_schedule(0.001),
             learning_starts=100,
-            gamma=args.discount,
             policy_kwargs=dict(
                 net_arch=dict(
                     pi=pi_arch,
@@ -66,7 +77,8 @@ def train(args):
                 )
             ),
             device=device_name,
-            tensorboard_log=os.path.join(dirpath, "./logs/")
+            tensorboard_log=os.path.join(dirpath, "./logs/"),
+            **kwargs
         )
         # Train the agent and display a progress bar
         # Save a checkpoint every 5000 steps
@@ -97,7 +109,7 @@ def train(args):
                 pass
 
             def _on_rollout_start(self) -> None:
-                goto_subtask(env, target_subtask=2, train=True)
+                goto_subtask(env, start_subtask=args.start_subtask, train=True)
 
             def _on_step(self) -> bool:
                 return True
@@ -116,7 +128,7 @@ def train(args):
             progress_bar=True,
             callback=callback,
             log_interval=10,
-            tb_log_name=filename + "_td3_obs",
+            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi_arch +"_qf_"+  args.qf_arch,
             reset_num_timesteps=False
         )
         # Save the agent
@@ -146,16 +158,15 @@ def test(args):
 
         # Run trained agent
         obs = wrapped_test_env.reset()
-        goto_subtask(env, target_subtask=2, train=False)
+        goto_subtask(env, start_subtask=args.start_subtask, train=False)
         for i in range(10000):
             print(f"Step {i}", end="\r")
             action, _states = model.predict(obs, deterministic=True)
             obs, rewards, dones, info = wrapped_test_env.step(action)
             wrapped_test_env.render()
             if True in dones:
-                print("Wow, it succeeds!")
                 obs = wrapped_test_env.reset()
-                goto_subtask(env, target_subtask=2, train=False)
+                goto_subtask(env, start_subtask=args.start_subtask, train=False)
 
         wrapped_test_env.close()
 
