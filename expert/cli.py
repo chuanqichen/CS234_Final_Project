@@ -32,7 +32,7 @@ def parse_args():
     return args 
 
 def save_confg(args):
-    with open(os.path.join(args.dirpath + './config.txt'), 'w') as f:
+    with open(os.path.join(args.dirpath + '/config.txt'), 'w') as f:
         json.dump(args.__dict__, f, indent=2)
 
 def read_confg(args):
