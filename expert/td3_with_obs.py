@@ -148,6 +148,7 @@ if operation == 'test' or operation == 'both':
         obs, rewards, dones, info = wrapped_test_env.step(action)
         wrapped_test_env.render()
         if True in dones:
+            print("Wow, it succeeds!")
             obs = wrapped_test_env.reset()
             goto_subtask(env, target_subtask=2, train=False)
 
