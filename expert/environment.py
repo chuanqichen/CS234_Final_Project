@@ -37,7 +37,7 @@ class Environment:
             controller_configs=self.controller_config,
             has_renderer=True,
             render_camera="frontview",
-            has_offscreen_renderer=True,
+            has_offscreen_renderer=use_camera_obs,
             control_freq=20,
             horizon=600,
             ignore_done=ignore_done,
