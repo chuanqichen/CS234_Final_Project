@@ -32,6 +32,9 @@ def parse_args():
     return args 
 
 def save_confg(args):
+    if not os.path.exists(args.dirpath):
+        os.makedirs(args.dirpath)
+    
     with open(os.path.join(args.dirpath + '/config.txt'), 'w') as f:
         json.dump(args.__dict__, f, indent=2)
 
