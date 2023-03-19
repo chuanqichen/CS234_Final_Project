@@ -24,7 +24,7 @@ def parse_args():
 	# TD3
     parser.add_argument("--action_noise", default=0.2)                # Std of Gaussian exploration noise : 0.1
     parser.add_argument("--batch_size", default=256, type=int)      # Batch size for both actor and critic
-    parser.add_argument("--discount", default=0.99)                 # Discount factor
+    parser.add_argument("--discount", default=0.99, type=float)                 # Discount factor
     parser.add_argument("--tau", default=0.005)                     # Target network update rate
     parser.add_argument("--policy_noise", default=0.3)              # Noise added to target policy during critic update : 0.3
     parser.add_argument("--noise_clip", default=0.7)                # Range to clip target policy noise : 0.5
