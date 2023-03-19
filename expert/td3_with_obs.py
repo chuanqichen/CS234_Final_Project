@@ -59,7 +59,7 @@ def train(args):
             buffer_size=4096,
             learning_rate=linear_schedule(0.001),
             learning_starts=100,
-            gamma=0.98,
+            gamma=args.discount,
             policy_kwargs=dict(
                 net_arch=dict(
                     pi=pi_arch,
