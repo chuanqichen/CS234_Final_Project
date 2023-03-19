@@ -1,6 +1,5 @@
 import os
 os.environ['DISPLAY'] = ':0.0'
-import gym
 import numpy as np
 
 from stable_baselines3 import PPO, TD3
