@@ -16,7 +16,7 @@ from environment import Environment, CustomWrapper
 from OpenGL import error as gl_error
 import warnings
 from motion import goto_subtask
-from cli import parse_args, save_confg
+from cli_ppo import parse_args, save_confg
 #from pink import PinkNoiseDist, PinkActionNoise
 
 with warnings.catch_warnings():
@@ -69,7 +69,7 @@ def train(args):
             policy_kwargs=dict(
                 net_arch=dict(
                     pi=pi_arch,
-                    qf=vf_arch,
+                    vf=vf_arch,
                 )
             ),
             device=device_name,
@@ -124,7 +124,7 @@ def train(args):
             progress_bar=True,
             callback=callback,
             log_interval=10,
-            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi_arch +"_qf_"+  args.qf_arch,
+            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi +"_vf_"+  args.vf,
             reset_num_timesteps=False
         )
         # Save the agent
