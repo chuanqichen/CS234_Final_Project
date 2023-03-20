@@ -29,6 +29,15 @@ def parse_args():
     parser.add_argument("--policy_noise", default=0.3)              # Noise added to target policy during critic update : 0.3
     parser.add_argument("--noise_clip", default=0.7)                # Range to clip target policy noise : 0.5
     parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates: 2
+
+    # PPO
+    parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rate
+    parser.add_argument("--clip_range", default=1.0, type=float)                # Clipping rate [0, 1]
+    parser.add_argument("--clip_range_vf", default=1.0, type=float)             # Clipping rate [0, 1]
+    parser.add_argument("--pi", default="200,50", help="arch for pi (separated with comma), such as 200, 50")  # policy architecture 
+    parser.add_argument("--vf", default="200,50", help="arch for vf (separated with comma), such as 200,50")  # policy architecture     
+
+
     args = parser.parse_args()
     return args 
 
