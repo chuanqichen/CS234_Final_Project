@@ -55,18 +55,17 @@ def train(args):
         kwargs = {
                 # PPO
                 #"action_noise": PinkActionNoise(args.action_noise, seq_len, action_dim),
-                "batch_size": args.batch_size,
-                "clip_range":args.clip_range,
-                "clip_range_vf":args.clip_range_vf,
-                "policy_delay": args.policy_freq,
-                "gamma": args.discount
+                "batch_size": int(args.batch_size),
+                "clip_range":float(args.clip_range),
+                "clip_range_vf":float(args.clip_range_vf),
+                "gamma": float(args.discount)
         }
 
         model = PPO(
             "MlpPolicy",
             train_env,
             verbose=1,
-            learning_rate=linear_schedule(args.learning_rate),
+            learning_rate=linear_schedule(float(args.learning_rate)),
             policy_kwargs=dict(
                 net_arch=dict(
                     pi=pi_arch,
