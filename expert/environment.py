@@ -5,6 +5,8 @@ import robosuite as suite
 from robosuite.controllers import load_controller_config
 from robosuite.utils.placement_samplers import UniformRandomSampler
 from robosuite.wrappers import GymWrapper
+from stable_baselines3.common.monitor import Monitor
+from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
 class Environment:
     def __init__(self):
@@ -35,7 +37,7 @@ class Environment:
             controller_configs=self.controller_config,
             has_renderer=True,
             render_camera="frontview",
-            has_offscreen_renderer=True,
+            has_offscreen_renderer=use_camera_obs,
             control_freq=20,
             horizon=600,
             ignore_done=ignore_done,
@@ -48,6 +50,26 @@ class Environment:
             #placement_initializer=None  # fixed bricks location, read from bricks.json if this is None
         )
         return env
+
+    def make_sb_env(fixed_placement=True,
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False):
+        # Create environment instance
+        env_generator = Environment()
+        env = env_generator.create_env(fixed_placement,
+                use_object_obs, use_camera_obs, ignore_done)
+        if not use_camera_obs:
+            wrapped_env = CustomWrapperWithoutImage(env)
+        else:
+            wrapped_env = CustomWrapper(env)
+        #wrapped_env = Monitor(wrapped_env)
+                ## # Needed for extracting eprewmean and eplenmean
+        wrapped_env = DummyVecEnv([lambda : wrapped_env])
+                # Needed for all environments (e.g. used for mulit-processing)
+        wrapped_env = VecNormalize(wrapped_env)
+                # Needed for improving training when using MuJoCo envs?
+        wrapped_env.training = train
+        return wrapped_env, env
+
 
 class CustomWrapper(GymWrapper):
     def __init__(self, env, keys=None):
@@ -75,6 +97,32 @@ class CustomWrapper(GymWrapper):
         ])
         obs_img = obs_dict["agentview_image"]
         obs_vector = np.concatenate([obs_vector, obs_img.flatten()])
+        return obs_vector
+
+class CustomWrapperWithoutImage(GymWrapper):
+    def __init__(self, env, keys=None):
+        super().__init__(env, keys)
+
+    def _flatten_obs(self, obs_dict, verbose=False):
+        """
+        Filters keys of interest out and concatenate the information.
+        Args:
+            obs_dict (OrderedDict): ordered dictionary of observations
+            verbose (bool): Whether to print out to console as observation keys are processed
+        Returns:
+            np.array: observations flattened into a 1d array
+        """
+        obs_vector = np.concatenate([v for k, v in obs_dict.items()])
+        '''
+        To modify obs_vector to only includes our choice of observations:
+        obs_vector = np.concatenate([
+            v for k, v in obs_dict.items() if k in [
+                "obs_1",
+                "obs_2",
+                ...
+            ]
+        ])
+        '''
         return obs_vector
     
 
