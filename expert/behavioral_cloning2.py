@@ -55,8 +55,8 @@ with open(os.path.join(DATADIR, "obs_dims.json"), "r") as f:
     obs_dims = sum([v for k, v in obs_dict.items()])
     train_dims = sum([v for k, v in obs_dict.items() if k in [
         "robot0_gripper_qpos",
-##        "gripper_to_cubeA",
-        "gripper_to_cubeB"
+        "gripper_to_cubeA",
+##        "gripper_to_cubeB"
     ]])
 
 ## with open(os.path.join(DATADIR, "img_dims.json"), "r") as f:
@@ -112,7 +112,7 @@ combined_filepaths = obs_filepaths
     ## combined_filepaths.append((filename, img_filename))
 
 # Change the epochs here
-epochs = 1
+epochs = 10
 file_no = 0
 total_file = len(obs_filepaths) * epochs
 print("TOTAL_FILE:", total_file)
@@ -128,13 +128,15 @@ for i in range(epochs):
             if TRAINING_MODE == "pick":
                 df_obs = df_obs[df_obs["subtask_id"].isin([1, 2, 3, 4])]
                 ## df_imgs = df_imgs[df_imgs["subtask_id"] <= 4]
+                obs = pd.concat([df_obs.iloc[:, 28:30], df_obs.iloc[:, 46:49]], axis=1)
             elif TRAINING_MODE == "place":
-                df_obs = df_obs[df_obs["subtask_id"].isin([5, 6])]
+                df_obs = df_obs[df_obs["subtask_id"].isin([5, 6, 7, 8])]
                 ## df_imgs = df_imgs[df_imgs["subtask_id"] > 4]
+                obs = pd.concat([df_obs.iloc[:, 28:30], df_obs.iloc[:, 49:52]], axis=1)
         except Exception as e:
             print(f"EXCEPTION ({type(e)}):", e)
             continue
-        obs = pd.concat([df_obs.iloc[:, 28:30], df_obs.iloc[:, 49:52]], axis=1)
+        ## obs = pd.concat([df_obs.iloc[:, 28:30], df_obs.iloc[:, 46:49]], axis=1)
         ## obs = df_obs.iloc[:, 0:train_dims]
         ## imgs = df_imgs.iloc[:, 0:img_dims]
         

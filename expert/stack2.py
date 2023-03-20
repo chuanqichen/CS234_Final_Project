@@ -182,7 +182,7 @@ class Stack2(Stack):
             material=bluewood,
         )
 
-        self.cubes = [self.cubeA, self.cubeB, self.cubeC, self.cubeD]
+        self.cubes = [self.cubeA, self.cubeB]#, self.cubeC, self.cubeD]
         # Create placement initializer
         if self.placement_initializer is not None:
             self.placement_initializer.reset()

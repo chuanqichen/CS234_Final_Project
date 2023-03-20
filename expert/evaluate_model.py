@@ -4,7 +4,7 @@ from environment import Environment
 from network_utils import NetworkBC, MultiLayerCNN, np2torch
 from config import device, device_name
 
-np.random.seed(1001)
+np.random.seed(3000)
 
 # Create environment instance
 env_generator = Environment()
@@ -17,11 +17,17 @@ env = env_generator.create_env(fixed_placement=False)
         ## img_input_width=64,
         ## output_size=4
 ## ).to(device=device)
-network = NetworkBC(
-    obs_input_size=3,
+pick_network = NetworkBC(
+    obs_input_size=5,
     output_size=env.action_dim
 ).to(device=device)
-network.load_state_dict(torch.load("model_pick.pt", 
+pick_network.load_state_dict(torch.load("model_pick.pt", 
+        map_location=torch.device(device)))
+place_network = NetworkBC(
+    obs_input_size=5,
+    output_size=env.action_dim
+).to(device=device)
+place_network.load_state_dict(torch.load("model_place.pt",
         map_location=torch.device(device)))
 
 # Run
@@ -41,15 +47,18 @@ for i in range(3):
     # Iterate over steps
     for i in range(max_nsteps):
         # Collect observations from previous step
-        obs_flat = np.concatenate([
-                obs["gripper_to_cubeA"],
-        ])
-        ## img_flat = obs["agentview_image"].flatten()
-        obs_img = obs_flat.astype(np.float32)
-        ## obs_img = np.array([
-                ## np.concatenate([obs_flat, img_flat])]).astype(np.float32)
-        # Act according to model
-        action = network(np2torch(obs_img)).cpu().detach().numpy().flatten()
+        if np.sign(obs["robot0_gripper_qpos"][0]) > 0:  # Pick
+            obs_flat = np.concatenate([
+                    obs["robot0_gripper_qpos"],
+                    obs["gripper_to_cubeA"],
+            ]).astype(np.float32)
+            action = pick_network(np2torch(obs_flat)).cpu().detach().numpy().flatten()
+        else:
+            obs_flat = np.concatenate([
+                    obs["robot0_gripper_qpos"],
+                    obs["gripper_to_cubeB"],
+            ]).astype(np.float32) 
+            action = place_network(np2torch(obs_flat)).cpu().detach().numpy().flatten()
         actions.append(action)
         obs, reward, done, info = env.step(action)
         env.render()
