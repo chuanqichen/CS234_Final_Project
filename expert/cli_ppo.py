@@ -21,8 +21,8 @@ def parse_args():
     parser.add_argument("--batch_size", default=256, type=int)      # Batch size for both actor and critic
     parser.add_argument("--discount", default=0.99, type=float)                 # Discount factortarget policy during critic update : 0.35
     parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rate
-    parser.add_argument("--clip_range", default=1.0, type=float)                # Clipping rate [0, 1]
-    parser.add_argument("--clip_range_vf", default=1.0, type=float)             # Clipping rate [0, 1]   
+    parser.add_argument("--clip_range", default=0.5, type=float)                # Clipping rate [0, 1]
+    parser.add_argument("--clip_range_vf", default=0.5, type=float)             # Clipping rate [0, 1]   
 
 
     args = parser.parse_args()

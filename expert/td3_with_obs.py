@@ -39,9 +39,9 @@ def train(args):
     #
     if args.operation  == 'train' or args.operation == 'both':
         # Create environment instance
-        pi_arch = args.pi_arch
+        pi_arch = args.pi
         pi_arch = [int(k) for k in pi_arch.split(",")]
-        qf_arch = args.qf_arch
+        qf_arch = args.vf
         qf_arch = [int(k) for k in qf_arch.split(",")]
         timesteps = int(args.max_timesteps)
         train_env, env = Environment.make_sb_env(fixed_placement=fixed_placement,
@@ -68,7 +68,7 @@ def train(args):
             train_env,
             verbose=1,
             buffer_size=4096,
-            learning_rate=linear_schedule(0.001),
+            learning_rate=linear_schedule(float(args.learning_rate)),
             learning_starts=100,
             policy_kwargs=dict(
                 net_arch=dict(
@@ -128,7 +128,7 @@ def train(args):
             progress_bar=True,
             callback=callback,
             log_interval=10,
-            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi_arch +"_qf_"+  args.qf_arch,
+            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi +"_vf_"+  args.vf,
             reset_num_timesteps=False
         )
         # Save the agent
