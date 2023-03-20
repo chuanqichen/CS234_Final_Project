@@ -1,4 +1,4 @@
-CUDA_VISIBLE_DEVICES=0 python ppo_with_obs.py --dirpath "test410" --filename "td3" --operation "both" --pi_arch 50,20 --qf_arch 50,20 --max_timesteps 10000000 --placement random --discount 0.98 &
-CUDA_VISIBLE_DEVICES=1 python ppo_with_obs.py --dirpath "test411" --filename "td3" --operation "both" --pi_arch 50,20 --qf_arch 100,50,20 --max_timesteps 10000000 --placement random --discount 0.98 &
-CUDA_VISIBLE_DEVICES=2 python ppo_with_obs.py --dirpath "test412" --filename "td3" --operation "both" --pi_arch 100,20 --qf_arch 100,20 --max_timesteps 10000000 --placement random --discount 0.98 &
-CUDA_VISIBLE_DEVICES=3 python ppo_with_obs.py --dirpath "test413" --filename "td3" --operation "both" --pi_arch 100,20 --qf_arch 100,50,20 --max_timesteps 10000000 --placement random --discount 0.98 &
+CUDA_VISIBLE_DEVICES=0 python ppo_with_obs.py --dirpath "ppo_50_20_1e4" --filename "ppo" --operation "both" --pi_arch 50,20 --qf_arch 50,20 --max_timesteps 10000000 --placement random --discount 0.98 --learning_rate 0.0001 &
+CUDA_VISIBLE_DEVICES=1 python ppo_with_obs.py --dirpath "ppo_50_20_1e4" --filename "ppo" --operation "both" --pi_arch 100,50,20 --qf_arch 100,50,20 --max_timesteps 10000000 --placement random --discount 0.98 --learning_rate 0.0001 &
+CUDA_VISIBLE_DEVICES=2 python ppo_with_obs.py --dirpath "ppo_50_20_1e5" --filename "ppo" --operation "both" --pi_arch 50,20 --qf_arch 50,20 --max_timesteps 10000000 --placement random --discount 0.98 --learning_rate 0.00001 &
+CUDA_VISIBLE_DEVICES=3 python ppo_with_obs.py --dirpath "ppo_50_20_1e5" --filename "ppo" --operation "both" --pi_arch 100,50,20 --qf_arch 100,50,20 --max_timesteps 10000000 --placement random --discount 0.98 --learning_rate 0.00001 &
