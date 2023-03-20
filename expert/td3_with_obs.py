@@ -44,8 +44,14 @@ def train(args):
         qf_arch = args.qf_arch
         qf_arch = [int(k) for k in qf_arch.split(",")]
         timesteps = int(args.max_timesteps)
-        train_env, env = Environment.make_sb_env(fixed_placement=fixed_placement,
-                    use_object_obs=True, use_camera_obs=False, ignore_done=False, train=True)
+        train_env, env = Environment.make_sb_env(
+            contoller=args.controller,
+            fixed_placement=fixed_placement,
+            use_object_obs=True,
+            use_camera_obs=False,
+            ignore_done=False,
+            train=True
+        )
         print(f"\nUsing pi:{pi_arch}")
         print(f"Using qf:{qf_arch}")
         print(f"Timesteps: {timesteps}")

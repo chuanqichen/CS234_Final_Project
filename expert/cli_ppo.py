@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rate
     parser.add_argument("--clip_range", default=1.0, type=float)                # Clipping rate [0, 1]
     parser.add_argument("--clip_range_vf", default=1.0, type=float)             # Clipping rate [0, 1]   
+    parser.add_argument("--controller", default="OSC_POSITION")   # Controller
 
 
     args = parser.parse_args()

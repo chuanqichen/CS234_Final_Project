@@ -10,11 +10,6 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 
 class Environment:
     def __init__(self):
-        self.controller_config = load_controller_config(
-                default_controller="OSC_POSITION")
-        self.controller_config["control_delta"] = True  # Use relative position
-        self.controller_config["kp"] = 1500
-        self.controller_config["damping_ratio"] = 1
 
         self.placement_sampler = UniformRandomSampler(
                 name="ObjectSampler",
@@ -27,8 +22,16 @@ class Environment:
                 z_offset=0.01
         )
 
-    def create_env(self, fixed_placement=False, use_object_obs=True,
+    def initialize_controller(self, controller):
+        self.controller_config = load_controller_config(
+                default_controller=controller)
+        self.controller_config["control_delta"] = True  # Use relative position
+        self.controller_config["kp"] = 1500
+        self.controller_config["damping_ratio"] = 1
+
+    def create_env(self, controller="OSC_POSITION", fixed_placement=False, use_object_obs=True,
             use_camera_obs=True, ignore_done=True):
+        self.initialize_controller(controller=controller)
         # create environment instance
         env = suite.make(
             env_name="Stack2", # try with other tasks like "Stack" and "Door"
@@ -51,11 +54,11 @@ class Environment:
         )
         return env
 
-    def make_sb_env(fixed_placement=True,
+    def make_sb_env(controller="OSC_POSITION", fixed_placement=True,
                 use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False):
         # Create environment instance
         env_generator = Environment()
-        env = env_generator.create_env(fixed_placement,
+        env = env_generator.create_env(controller, fixed_placement,
                 use_object_obs, use_camera_obs, ignore_done)
         if not use_camera_obs:
             wrapped_env = CustomWrapperWithoutImage(env)
