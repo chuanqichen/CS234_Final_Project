@@ -134,7 +134,7 @@ def train(args):
             progress_bar=True,
             callback=callback,
             log_interval=10,
-            tb_log_name="task_" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi +"_vf_"+  args.vf,
+            tb_log_name="td3_task" + str(args.start_subtask) + "_"+   args.placement +"_pi_"+  args.pi +"_vf_"+  args.vf,
             reset_num_timesteps=False
         )
         # Save the agent
