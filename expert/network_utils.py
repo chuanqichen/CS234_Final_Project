@@ -195,11 +195,11 @@ class NetworkBC2(nn.Module):
                     out_features=self.DENSE_OUTPUT
             ),
             nn.ReLU(),
-            nn.Linear(
-                    in_features=self.DENSE_OUTPUT,
-                    out_features=self.DENSE_OUTPUT
-            ),
-            nn.ReLU(),
+            ##nn.Linear(
+            ##        in_features=self.DENSE_OUTPUT,
+            ##        out_features=self.DENSE_OUTPUT
+            ##),
+            ##nn.ReLU(),
             nn.Linear(
                     in_features=self.DENSE_OUTPUT,
                     out_features=self.OUTPUT_SIZE
@@ -207,7 +207,12 @@ class NetworkBC2(nn.Module):
         )
 
     def forward(self, x):
-        return self.dense_stack(x)
+        linear_out = self.dense_stack(x) # shape is (batches, features)
+        if len(linear_out.shape) > 1:
+            return torch.cat((linear_out[:,0:3], torch.tanh(linear_out[:,3:])), dim=1) # concatenate over feature dimension
+        else:
+            return torch.cat((linear_out[0:3], torch.tanh(linear_out[3:])))
+
 
 
 def np2torch(x, cast_double_to_float=True):

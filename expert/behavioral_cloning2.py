@@ -87,8 +87,12 @@ else:
         output_size=action_dim
     ).to(device=device)
 optimizer = torch.optim.Adam(network.parameters(), lr=0.001)
-criterion = torch.nn.MSELoss()
-
+def custom_loss(y_hat, y):
+    weight = torch.where(y<0, 10.3, 1)[:,-1]
+    return (torch.nn.MSELoss()(y_hat[:,:4], y[:,:4]) +
+         1.0 * torch.nn.BCELoss(weight=weight)(y_hat[:,3]/2+.5, y[:,3]/2+.5))
+## criterion = torch.nn.MSELoss()
+criterion = custom_loss
 
 # ---------------------------------------------------------------------------- #
 #                                   Training                                   #
@@ -112,9 +116,10 @@ combined_filepaths = obs_filepaths
     ## combined_filepaths.append((filename, img_filename))
 
 # Change the epochs here
-epochs = 10
+epochs = 1
 file_no = 0
 total_file = len(obs_filepaths) * epochs
+losses = []
 print("TOTAL_FILE:", total_file)
 print("...Start Training...")
 for i in range(epochs):
@@ -143,7 +148,7 @@ for i in range(epochs):
         obs_imgs = obs.values.astype(np.float32)
         ## obs_imgs = pd.concat([obs, imgs], axis=1).values.astype(np.float32)
         actions = df_obs.iloc[:, obs_dims:(obs_dims+action_dim)].values.astype(np.float32)
-        
+        ## actions[:,-1] -= 10  # IDEA: offset grip action command
         dataloader = create_dataloader(obs_imgs, actions, batch_size=batch_size)
         n_dataloader = len(dataloader)
         del obs, obs_imgs, actions, df_obs
@@ -153,6 +158,7 @@ for i in range(epochs):
 
             y_hat = network(X)
             loss = criterion(y_hat, y)
+            losses.append(loss.cpu().detach().numpy().flatten())
             print(
                 f"File: {file_no}/{total_file}, Batch: {batch+1}/{n_dataloader}, Loss: {loss}",
                 end="\r"
@@ -172,7 +178,8 @@ for i in range(epochs):
                 else:
                     torch.save(network.state_dict(), "model.pt")      
 
-
+plt.plot(losses)
+plt.show()
 
 
 
