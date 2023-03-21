@@ -12,8 +12,8 @@ def parse_args():
     parser.add_argument("--operation", default="both", help="train, test, or both")               # train', 'test', or 'both'
 
     # Experiment
-    parser.add_argument("--pi_arch", default="200,50", help="arch for pi (separated with comma), such as 200, 50")  # policy architecture 
-    parser.add_argument("--qf_arch", default="200,50", help="arch for qf (separated with comma), such as 200,50")  # policy architecture     
+    parser.add_argument("--pi", default="200,50", help="arch for pi (separated with comma), such as 200, 50")  # policy architecture 
+    parser.add_argument("--vf", default="200,50", help="arch for qf (separated with comma), such as 200,50")  # policy architecture     
     parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rat
     parser.add_argument("--policy", default="TD3")               # Policy name
     parser.add_argument("--env", default="stack2")               # OpenAI gym environment name
@@ -33,7 +33,6 @@ def parse_args():
     parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates: 2
 
     # PPO Specific 
-    parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rate
     parser.add_argument("--clip_range", default=1.0, type=float)                # Clipping rate [0, 1]
     parser.add_argument("--clip_range_vf", default=1.0, type=float)             # Clipping rate [0, 1]
 
