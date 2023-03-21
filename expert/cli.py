@@ -32,14 +32,10 @@ def parse_args():
     parser.add_argument("--noise_clip", default=0.7)                # Range to clip target policy noise : 0.5
     parser.add_argument("--policy_freq", default=2, type=int)       # Frequency of delayed policy updates: 2
 
-<<<<<<< HEAD
-=======
     # PPO Specific 
     parser.add_argument("--learning_rate", default=0.001, type=float)                # Learning Rate
     parser.add_argument("--clip_range", default=1.0, type=float)                # Clipping rate [0, 1]
     parser.add_argument("--clip_range_vf", default=1.0, type=float)             # Clipping rate [0, 1]
-
->>>>>>> 87163f806bf5c359519fceb6c1fad0d99c9f7ba1
 
     args = parser.parse_args()
     return args 
