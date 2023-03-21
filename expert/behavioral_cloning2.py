@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 import numpy as np
 import pandas as pd
-from network_utils import NetworkBC, MultiLayerCNN, np2torch
+from network_utils import NetworkBC, NetworkBC2, MultiLayerCNN, np2torch
 from config import device, device_name
 from environment import Environment
 import matplotlib.pyplot as plt
@@ -76,16 +76,16 @@ def create_dataloader(obs, actions, batch_size: int):
 #                                    Network                                   #
 # ---------------------------------------------------------------------------- #
 
-## network = MultiLayerCNN(
-    ## obs_input_size=train_dims,
-    ## img_input_height=int(np.sqrt(img_dims / 3)),
-    ## img_input_width=int(np.sqrt(img_dims / 3)),
-    ## output_size=action_dim
-## ).to(device=device)
-network = NetworkBC(
-    obs_input_size=train_dims,
-    output_size=action_dim
-).to(device=device)
+if TRAINING_MODE == "place":
+    network = NetworkBC2(
+        obs_input_size=train_dims,
+        output_size=action_dim
+    ).to(device=device)
+else:
+    network = NetworkBC(
+        obs_input_size=train_dims,
+        output_size=action_dim
+    ).to(device=device)
 optimizer = torch.optim.Adam(network.parameters(), lr=0.001)
 criterion = torch.nn.MSELoss()
 
