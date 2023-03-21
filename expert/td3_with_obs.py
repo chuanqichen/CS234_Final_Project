@@ -45,7 +45,7 @@ def train(args):
         qf_arch = [int(k) for k in qf_arch.split(",")]
         timesteps = int(args.max_timesteps)
         train_env, env = Environment.make_sb_env(
-            contoller=args.controller,
+            controller=args.controller,
             fixed_placement=fixed_placement,
             use_object_obs=True,
             use_camera_obs=False,
