@@ -295,8 +295,7 @@ class Stack2(Stack):
         # grasping reward
         grasping_cubeA = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeA)
         if grasping_cubeA:
-            # r_reach += 0.25
-            r_reach += 0
+            r_reach += 0.25
 
         # lifting is successful when the cube is above the table top by a margin
         cubeA_height = cubeA_pos[2]
