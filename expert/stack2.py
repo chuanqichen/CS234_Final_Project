@@ -295,7 +295,6 @@ class Stack2(Stack):
         # grasping reward
         grasping_cubeA = self._check_grasp(gripper=self.robots[0].gripper, object_geoms=self.cubeA)
         if grasping_cubeA:
-            # r_reach += 0.25
             r_reach += 0
 
         # lifting is successful when the cube is above the table top by a margin
@@ -307,7 +306,7 @@ class Stack2(Stack):
         # Aligning is successful when cubeA is right above cubeB
         if cubeA_lifted:
             horiz_dist = np.linalg.norm(np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2]))
-            r_lift += 0.5 * (1 - np.tanh(horiz_dist)) + 1.0
+            r_lift += 0.5 * (1 - np.tanh(horiz_dist)) + (1.0 * 4)
 
         # stacking is successful when the block is lifted and the gripper is not holding the object
         r_stack = 0
