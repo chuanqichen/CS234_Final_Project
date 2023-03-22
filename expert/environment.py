@@ -129,7 +129,6 @@ class CustomWrapperWithoutImage(GymWrapper):
         obs_vector = np.concatenate([
             v for k, v in obs_dict.items() if k in [
                 "robot0_gripper_qpos",
-                "gripper_to_cubeA",
                 "gripper_to_cubeB",
             ]
         ])
