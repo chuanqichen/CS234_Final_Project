@@ -313,7 +313,7 @@ class Stack2(Stack):
         r_stack = 0
         cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
         if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
-            r_stack = 2.0 + 2.0
+            r_stack = 2.0 + 5000
 
         return r_reach, r_lift, r_stack
 
