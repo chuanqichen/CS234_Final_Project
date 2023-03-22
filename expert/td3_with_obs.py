@@ -10,7 +10,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 from stable_baselines3.common.callbacks import BaseCallback, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
-from network_utils import MultiLayerCNNFeaturesExtractor
+from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
+from network_utils import MultiLayerCNNFeaturesExtractor, NetworkBC2, SimpleFeaturesExtractor
 from config import device, device_name, linear_schedule
 from environment import Environment, CustomWrapper
 from OpenGL import error as gl_error
@@ -69,18 +70,28 @@ def train(args):
                 "gamma": args.discount
         }
 
+        # The noise objects for TD3
+        n_actions = train_env.action_space.shape[-1]
+        action_noise = NormalActionNoise(mean=np.zeros(n_actions), sigma=0.05 * np.ones(n_actions))
         model = TD3(
             "MlpPolicy",
             train_env,
+            action_noise=action_noise, 
             verbose=1,
             buffer_size=4096,
             learning_rate=linear_schedule(float(args.learning_rate)),
             learning_starts=100,
             policy_kwargs=dict(
                 net_arch=dict(
-                    pi=pi_arch,
-                    qf=qf_arch,
-                )
+                    #pi=pi_arch,
+                    #qf=qf_arch,
+                    pi=[],
+                    qf=[],                    
+                ),
+                features_extractor_class=SimpleFeaturesExtractor,
+                features_extractor_kwargs=dict(
+                    obs_input_size=8,
+                    output_size=env.action_dim)
             ),
             device=device_name,
             tensorboard_log=os.path.join(dirpath, "./logs/"),

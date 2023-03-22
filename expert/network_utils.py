@@ -155,13 +155,51 @@ class MultiLayerCNNPolicy(nn.Module):
         output = self.combined_stack(output)
         return output
 
+
+class SimpleFeaturesExtractor(BaseFeaturesExtractor):    
+    def __init__(self, observation_space: gym.Space, obs_input_size, output_size):
+        super().__init__(observation_space, features_dim=output_size)
+        self.OBS_SIZE = obs_input_size
+        self.DENSE_OUTPUT = 50
+        self.OUTPUT_SIZE = output_size
+
+        self.dense_stack = nn.Sequential(
+            nn.Linear(
+                    in_features=self.OBS_SIZE,
+                    out_features=self.DENSE_OUTPUT
+            ),
+            nn.ReLU(),
+            # nn.Linear(
+            #         in_features=self.DENSE_OUTPUT,
+            #         out_features=self.DENSE_OUTPUT
+            # ),
+            # nn.ReLU(),
+            nn.Linear(
+                    in_features=self.DENSE_OUTPUT,
+                    out_features=self.OUTPUT_SIZE
+            )
+        )
+
+    def forward(self, x):
+        linear_out = self.dense_stack(x) # shape is (batches, features)
+        if len(linear_out.shape) > 1:
+            #return torch.cat((linear_out[:,0:3], linear_out[:,3:]), dim=1) # concatenate over feature dimension
+            return torch.cat((linear_out[:,0:3], torch.tanh(linear_out[:,3:])), dim=1) # concatenate over feature dimension
+            #return torch.cat((torch.tanh(linear_out[:,0:3]), torch.tanh(linear_out[:,3:])), dim=1) # concatenate over feature dimension
+            #return torch.cat((linear_out[:,0:3], torch.tanh(linear_out[:,3:])), dim=1) # concatenate over feature dimension
+        else:
+            #return torch.cat((linear_out[0:3], linear_out[3:]))
+            return torch.cat((linear_out[0:3], torch.tanh(linear_out[3:])))
+            #return torch.cat((torch.tanh(linear_out[0:3]), torch.tanh(linear_out[3:])))
+            #return torch.cat((linear_out[0:3], torch.tanh(linear_out[3:])))
+
 class NetworkBC(nn.Module):
     """ Network for behavioral cloning. """
     
     def __init__(self, obs_input_size, output_size):
         super().__init__()
         self.OBS_SIZE = obs_input_size
-        self.DENSE_OUTPUT = 32
+        self.DENSE_OUTPUT = 50
         self.OUTPUT_SIZE = output_size
 
         self.dense_stack = nn.Sequential(
@@ -212,7 +250,6 @@ class NetworkBC2(nn.Module):
             return torch.cat((linear_out[:,0:3], torch.tanh(linear_out[:,3:])), dim=1) # concatenate over feature dimension
         else:
             return torch.cat((linear_out[0:3], torch.tanh(linear_out[3:])))
-
 
 
 def np2torch(x, cast_double_to_float=True):

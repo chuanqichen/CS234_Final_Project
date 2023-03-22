@@ -30,7 +30,7 @@ class Environment:
         self.controller_config["damping_ratio"] = 1
 
     def create_env(self, controller="OSC_POSITION", fixed_placement=False, use_object_obs=True,
-            use_camera_obs=True, ignore_done=True):
+            use_camera_obs=True, ignore_done=True, has_render=True):
         self.initialize_controller(controller=controller)
         # create environment instance
         env = suite.make(
@@ -38,10 +38,10 @@ class Environment:
             robots="Sawyer",  # try with other robots like "Panda" and "Jaco"
             gripper_types="default",
             controller_configs=self.controller_config,
-            has_renderer=True,
+            has_renderer=has_render,
             render_camera="frontview",
-            has_offscreen_renderer=use_camera_obs,
-            control_freq=20,
+            has_offscreen_renderer=has_render,
+            control_freq=40,
             horizon=600,
             ignore_done=ignore_done,
             use_object_obs=use_object_obs,
@@ -55,11 +55,11 @@ class Environment:
         return env
 
     def make_sb_env(controller="OSC_POSITION", fixed_placement=True,
-                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False):
+                use_object_obs=True, use_camera_obs=True, ignore_done=False, train=False, has_render=True):
         # Create environment instance
         env_generator = Environment()
         env = env_generator.create_env(controller, fixed_placement,
-                use_object_obs, use_camera_obs, ignore_done)
+                use_object_obs, use_camera_obs, ignore_done, has_render=has_render)
         if not use_camera_obs:
             wrapped_env = CustomWrapperWithoutImage(env)
         else:
@@ -130,7 +130,10 @@ class CustomWrapperWithoutImage(GymWrapper):
             v for k, v in obs_dict.items() if k in [
                 "robot0_gripper_qpos",
                 "gripper_to_cubeA",
-                "gripper_to_cubeB"
+                # 'cubeA_pos', 'cubeA_quat',
+                "gripper_to_cubeB",
+                #'cubeB_pos', 'cubeB_quat',
+               # 'object-state'
             ]
         ])
         return obs_vector
