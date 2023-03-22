@@ -264,7 +264,7 @@ class Stack2(Stack):
         """
         r_reach, r_lift, r_stack = self.staged_rewards()
         if self.reward_shaping:
-            reward = max(r_reach, r_lift, r_stack)
+            reward = max(r_reach, r_lift, r_stack) - 0.5
         else:
             reward = 2.0 if r_stack > 0 else 0.0
 
@@ -307,13 +307,13 @@ class Stack2(Stack):
         # Aligning is successful when cubeA is right above cubeB
         if cubeA_lifted:
             horiz_dist = np.linalg.norm(np.array(cubeA_pos[:2]) - np.array(cubeB_pos[:2]))
-            r_lift += 0.5 * (1 - np.tanh(horiz_dist))
+            r_lift += 0.5 * (1 - np.tanh(horiz_dist)) + 1.0
 
         # stacking is successful when the block is lifted and the gripper is not holding the object
         r_stack = 0
         cubeA_touching_cubeB = self.check_contact(self.cubeA, self.cubeB)
         if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
-            r_stack = 2.0
+            r_stack = 2.0 + 2.0
 
         return r_reach, r_lift, r_stack
 
