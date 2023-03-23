@@ -7,7 +7,7 @@ from stack2 import Stack2, placement_initializer2
 from environment import Environment
 
 
-np.random.seed(2000)
+np.random.seed(3000)
 
 
 
@@ -18,7 +18,7 @@ env = env_generator.create_env(fixed_placement=False)
 scene_no = 0
 n_success = 0
 while True:
-    print(f"Scene {scene_no}, success = {n_success}/{scene_no}")
+    print(f"Episode {scene_no}, success = {n_success}/{scene_no}")
     scene_no += 1
     # reset the environment
     env.reset()

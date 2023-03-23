@@ -87,10 +87,12 @@ else:
         output_size=action_dim
     ).to(device=device)
 optimizer = torch.optim.Adam(network.parameters(), lr=0.001)
+lam = 5
+gam = 50
 def custom_loss(y_hat, y):
-    weight = torch.where(y<0, 10.3, 1)[:,-1]
+    weight = torch.where(y<0, gam, 1)[:,-1]
     return (torch.nn.MSELoss()(y_hat[:,:4], y[:,:4]) +
-         1.0 * torch.nn.BCELoss(weight=weight)(y_hat[:,3]/2+.5, y[:,3]/2+.5))
+         lam * torch.nn.BCELoss(weight=weight)(y_hat[:,3]/2+.5, y[:,3]/2+.5))
 ## criterion = torch.nn.MSELoss()
 criterion = custom_loss
 
@@ -167,16 +169,15 @@ for i in range(epochs):
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
-            
-            # Saving the model
-            if i % 50 == 0:
-                # saving the mode
-                if TRAINING_MODE == "pick":
-                    torch.save(network.state_dict(), "model_pick.pt") 
-                elif TRAINING_MODE == "place":
-                    torch.save(network.state_dict(), "model_place.pt") 
-                else:
-                    torch.save(network.state_dict(), "model.pt")      
+
+# Saving the model
+if TRAINING_MODE == "pick":
+    torch.save(network.state_dict(), "cloning/model_pick.pt") 
+elif TRAINING_MODE == "place":
+    torch.save(network.state_dict(), f"cloning/model_place_lam{lam}_gam{gam}.pt") 
+    ## torch.save(network.state_dict(), f"cloning/model_place.pt") 
+else:
+    torch.save(network.state_dict(), "cloning/model.pt")      
 
 plt.plot(losses)
 plt.show()

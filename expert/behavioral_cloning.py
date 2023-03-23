@@ -134,8 +134,8 @@ for i in range(epochs):
 
 # saving the mode
 if TRAINING_MODE == "pick":
-    torch.save(network.state_dict(), "model_pick.pt") 
+    torch.save(network.state_dict(), "cloning/model_pick.pt") 
 elif TRAINING_MODE == "place":
-    torch.save(network.state_dict(), "model_place.pt") 
+    torch.save(network.state_dict(), "cloning/model_place.pt") 
 else:
-    torch.save(network.state_dict(), "model.pt") 
+    torch.save(network.state_dict(), "cloning/model.pt") 
