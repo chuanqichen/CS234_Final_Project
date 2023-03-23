@@ -197,6 +197,8 @@ class Stack2(Stack):
             mujoco_objects=self.cubes,
         )
 
+        #self.robots[0].action_limits = self.robots[0].action_limits/2.0
+
     def _reset_internal(self):
         """
         Resets simulation internal configurations.
@@ -262,9 +264,10 @@ class Stack2(Stack):
         Returns:
             float: reward value
         """
-        r_reach, r_lift, r_stack = self.staged_rewards()
+        r_dist_cubes, r_reach, r_lift, r_stack = self.staged_rewards()
         if self.reward_shaping:
-            reward = max(r_reach, r_lift, r_stack)
+            reward = max(r_dist_cubes, max(r_reach, r_lift, r_stack))
+            #reward = (r_reach + r_lift + r_stack)/2
         else:
             reward = 2.0 if r_stack > 0 else 0.0
 
@@ -285,10 +288,15 @@ class Stack2(Stack):
                 - (float): reward for stacking
         """
         # reaching is successful when the gripper site is close to the center of the cube
+
         cubeA_pos = self.sim.data.body_xpos[self.cubeA_body_id]
         cubeB_pos = self.sim.data.body_xpos[self.cubeB_body_id]
         gripper_site_pos = self.sim.data.site_xpos[self.robots[0].eef_site_id]
         dist = np.linalg.norm(gripper_site_pos - cubeA_pos)
+        dist2 = np.linalg.norm(gripper_site_pos - cubeB_pos)
+
+        r_dist_cubes = (1 - np.tanh(10 * dist))*0.010  + (1 - np.tanh(10 * dist2)) * 0.005
+
         #r_reach = (1 - np.tanh(10.0 * dist)) * 0.25
         r_reach = (1 - np.tanh(1.2 * dist)) * 0.25
 
@@ -314,7 +322,7 @@ class Stack2(Stack):
         if not grasping_cubeA and r_lift > 0 and cubeA_touching_cubeB:
             r_stack = 2.0
 
-        return r_reach, r_lift, r_stack
+        return r_dist_cubes, r_reach, r_lift, r_stack
 
 
 register_env(Stack2)

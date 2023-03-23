@@ -10,7 +10,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv, VecNormalize
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 from stable_baselines3.common.callbacks import BaseCallback, StopTrainingOnNoModelImprovement, StopTrainingOnMaxEpisodes
-from network_utils import MultiLayerCNNFeaturesExtractor
+from network_utils import MultiLayerCNNFeaturesExtractor, SimpleFeaturesExtractor
 from config import device, device_name, linear_schedule
 from environment import Environment, CustomWrapper
 from OpenGL import error as gl_error
@@ -50,7 +50,8 @@ def train(args):
             use_object_obs=True,
             use_camera_obs=False,
             ignore_done=False,
-            train=True
+            train=True,
+            has_render=False
         )
         print(f"\nUsing pi:{pi_arch}")
         print(f"Using qf:{vf_arch}")
@@ -72,11 +73,18 @@ def train(args):
             train_env,
             verbose=1,
             learning_rate=linear_schedule(float(args.learning_rate)),
+            use_sde=True,
             policy_kwargs=dict(
                 net_arch=dict(
-                    pi=pi_arch,
-                    vf=vf_arch,
-                )
+                    #pi=pi_arch,
+                    #qf=qf_arch,
+                    pi=[],
+                    vf=[],                    
+                ),
+                features_extractor_class=SimpleFeaturesExtractor,
+                features_extractor_kwargs=dict(
+                    obs_input_size=8,
+                    output_size=env.action_dim)
             ),
             device=device_name,
             tensorboard_log=os.path.join(dirpath, "./logs/"),
@@ -98,7 +106,7 @@ def train(args):
         # Stop training if there is no improvement after more than 3 evaluations
         stop_train_callback = StopTrainingOnNoModelImprovement(max_no_improvement_evals=50, min_evals=5, verbose=1)
         eval_env, _ = Environment.make_sb_env(fixed_placement=fixed_placement,
-                    use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False)
+                    use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False, has_render=False)
         eval_callback = EvalCallback(eval_env, best_model_save_path=os.path.join(dirpath, "best_model"), callback_after_eval=stop_train_callback,
                                 log_path=os.path.join(dirpath, "best_model"), eval_freq=3000,
                                 deterministic=True, render=False)
@@ -143,7 +151,7 @@ def test(args):
     #
     if args.operation == 'test' or args.operation == 'both':
         wrapped_test_env, env =   Environment.make_sb_env(fixed_placement=fixed_placement,
-                    use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False)
+                    use_object_obs=True, use_camera_obs=False, ignore_done=False, train=False, has_render=True)
         # Load the trained agent
         # NOTE: if you have loading issue, you can pass `print_system_info=True`
         # to compare the system on which the model was trained vs the current one
